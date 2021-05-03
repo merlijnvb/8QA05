@@ -17,6 +17,10 @@ Columns = ['P1Sig','P1STB',	'P1Cov', 'P2Sig', 'P2STB', 'P2Cov', 'P2SigNorm', 'Lo
 Day_numbers = [1,2,4,7,14,21,45,90]
 
 def readfile(filename):
+    """Preconditions:  Filename is de naam van een .txt bestand dat te vinden
+                        is in dezelfde map als deze functie.
+    Postconditions:   Retourneert een dictionary met daarin per ID een lijst 
+                        van alle bijbehorende waarden."""
     infile = open(filename)
     lines = infile.readlines()
     infile.close()
@@ -36,10 +40,17 @@ def readfile(filename):
     return ID_dict
     
 def make_Days():
+    """Preconditions:  Alle aan te roepen .txt bestanden staan in dezelfde
+                        folder als deze functie.
+    Postconditions:   Retourneert een lijst van dictionaries van alle dagen"""
     return [readfile("dag1.txt"),readfile("dag2.txt"),readfile("dag4.txt"),readfile("dag7.txt"),readfile("dag14.txt"),readfile("dag21.txt"),readfile("dag45.txt"),readfile("dag90.txt")]
 
 
 def summation(Dag_dict,column_head):
+    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende 
+                        waarden en column head is de index van de kolom die 
+                        moet worden opgesomd.
+    Postconditions: Retourneert de som van alle waarden uit de kolom."""
     total = 0
     
     for key in Dag_dict:
