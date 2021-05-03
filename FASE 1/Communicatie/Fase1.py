@@ -81,12 +81,22 @@ def normSig2_add(Dagen):
     for Dag in Dagen:
         normalize(Dag) # normalize functie aanroepen, zodat de normalisatie waardes worden toegevoegd
         
-def plot_dag(ax_dag,df_dag,x,y,log=False):
-    """Preconditions: dict van een dag, plotnummer, log=T/F,x/y kolommen weten"""
+def plot_dag(ax_dag,df_dag,x,y):
+    """Preconditions:  Ax is een subplot, df_dag is een dataframe met
+                        de waarden van één dag per index, x en y zijn
+                        de namen van kolommen uit df_dag.
+    Postconditions:   Plot alle datapunten van kolom x en y van de
+                        gegeven dag"""
     df_dag.plot(kind='scatter', x=x, y=y, c='r', ax=ax_dag)
     
 
 def plot_phase1(Dagen,log=False,Norm=False):
+    """Preconditions:  Dagen is een lijst van libraries, log en
+                        norm zijn booleans die aangeven of de 
+                        functie logaritmisch, dan wel genormaliseerd
+                        moet worden geplot.
+    Postconditions:   Zorgt ervoor dat de data van elke dag in één
+                        figuur zou """    
     #make df
     add_on = ''
     norm_fac = 0
@@ -107,11 +117,11 @@ def plot_phase1(Dagen,log=False,Norm=False):
         df_dag = pd.DataFrame.from_dict(Dagen[i]).transpose()
         df_dag.columns = Columns
         if log:
-            plot_dag(ax_dag,df_dag,Columns[7],Columns[8+norm_fac], True)
+            plot_dag(ax_dag,df_dag,Columns[7],Columns[8+norm_fac])
             ax_dag.plot([0,5],[0,5], c="k")
         else: 
             ax_dag.plot([0,50000],[0,50000], c="k")
-            plot_dag(ax_dag,df_dag,Columns[0],Columns[3 + norm_fac],True)
+            plot_dag(ax_dag,df_dag,Columns[0],Columns[3 + norm_fac])
 
 
 def Main():
