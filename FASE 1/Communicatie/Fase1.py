@@ -3,7 +3,7 @@
 """
 Created on Thu Apr 29 10:17:49 2021
 
-@author: irisalmekinders
+@author: Iris Almekinders en Niels van Noort
 """
 
 #libraries
