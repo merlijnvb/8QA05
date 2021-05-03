@@ -13,7 +13,7 @@ import numpy as np
 import math
 
 #global variables
-Columns = ['P1Sig','P1STB',	'P1Cov', 'P2Sig', 'P2STB', 'P2Cov', 'P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm']
+Columns = ['P1Sig', 'P1STB', 'P1Cov', 'P2Sig', 'P2STB', 'P2Cov', 'P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm']
 Day_numbers = [1,2,4,7,14,21,45,90]
 
 def readfile(filename):
@@ -58,6 +58,8 @@ def summation(Dag_dict,column_head):
     return total
 
 def logaritm(Dag_dict):
+    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende waarden.
+    Postconditions:  Zet P1Sig, P2Sig en P2SigNorm in een logaritme en voegt deze toe aan de dictionary."""
     for key in Dag_dict:
         Dag_dict[key].append(math.log10(Dag_dict[key][0]))
         Dag_dict[key].append(math.log10(Dag_dict[key][3]))
@@ -65,17 +67,19 @@ def logaritm(Dag_dict):
         
 def Log_add(Dagen):
     for Dag in Dagen:
-        logaritm(Dag)
+        logaritm(Dag) # logaritm functie aanroepen, zodat de logaritmische waardes worden toegevoegd
    
 def normalize(Dag_dict):
-    S1 = summation(Dag_dict, "P1Sig")
-    S2 = summation(Dag_dict, "P2Sig")
+    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende waarden.
+    Postconditions:  Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan de dictionary."""
+    S1 = summation(Dag_dict, "P1Sig") # optellen van alle P1Sig waardes
+    S2 = summation(Dag_dict, "P2Sig") # optellen van alle P2Sig waardes
     for key in Dag_dict:
         Dag_dict[key].append(int(Dag_dict[key][3])*S1/S2)
 
 def normSig2_add(Dagen):
     for Dag in Dagen:
-        normalize(Dag)
+        normalize(Dag) # normalize functie aanroepen, zodat de normalisatie waardes worden toegevoegd
         
 def plot_dag(ax_dag,df_dag,x,y,log=False):
     """Preconditions: dict van een dag, plotnummer, log=T/F,x/y kolommen weten"""
