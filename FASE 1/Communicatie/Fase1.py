@@ -141,23 +141,26 @@ def plot_phase1(Dagen):
         for norm in [False,True]:
             plot_dagen(Dagen,log,norm)
             
-def Classes(Dagen):
+def make_class(Dag,stb_threshold=25):
     classA, classB, classC, classD = [], [], [], []
-    stb_threshold = 25
     
-    for Dag in Dagen:
-        for ID in Dag:
-            if (Dag[ID][1] >= stb_threshold):
-                if (Dag[ID][4] >= stb_threshold):
-                    classA.append(ID)
-                else:
-                    classB.append(ID)
+    for ID in Dag:
+        if (Dag[ID][1] >= stb_threshold):
+            if (Dag[ID][4] >= stb_threshold):
+                classA.append(ID)
             else:
-                if (Dag[ID][4] >= stb_threshold):
-                    classC.append(ID)
-                else:
-                    classD.append(ID)
-    return classA, classB, classC, classD
+                classB.append(ID)
+        else:
+            if (Dag[ID][4] >= stb_threshold):
+                classC.append(ID)
+            else:
+                classD.append(ID)
+    return classA, classB, classC, classD            
+            
+def Classes(Dagen):
+    for Dag in Dagen:
+        a,b,c,d = make_class(Dag)
+    return 
                 
 
 def Main():
