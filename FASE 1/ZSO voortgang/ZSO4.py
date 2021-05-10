@@ -118,9 +118,9 @@ def plot_dagen(Dagen,log=False,Norm=False):
         df_dag.columns = Columns
         # assign color to right class for plotting
         df_dag = df_dag.replace({'Class': Colors})
-        # plot every class per day
+        # plot every class per day; this ensures the legenda can be made
         for Class in Colors:
-            # making a DataFrame for every class
+            # making a DataFrame for every class using a mask
             df_dag_new = df_dag[df_dag['Class'] == Colors[Class]]
             # check whether we should use the logaritmic columns
             if log:
