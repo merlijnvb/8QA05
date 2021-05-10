@@ -119,12 +119,15 @@ def plot_dagen(Dagen,log=False,Norm=False):
         df_dag.columns = Columns
         df_dag = df_dag.replace({'Class': Colors})
         #check whether we should use the logaritmic columns
-        if log:
-            df_dag.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c='Class', ax=ax_dag)
-            ax_dag.plot([0,5],[0,5], c="k")
-        else: 
-            ax_dag.plot([0,50000],[0,50000], c="k")
-            df_dag.plot(kind='scatter', x=Columns[0], y=Columns[3 + norm_fac], c='Class', ax=ax_dag)
+        for Class in Colors:
+            df_dag_new = df_dag[df_dag['Class'] == Colors[Class]]
+            if log:
+                df_dag_new.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c=Colors[Class], ax=ax_dag, alpha = 0.1, colorbar = False)
+                ax_dag.plot([0,5],[0,5], c="k")
+            else: 
+                if Class != 'A':
+                    ax_dag.plot([0,50000],[0,50000], c="k")
+                    df_dag_new.plot(kind='scatter', x=Columns[0], y=Columns[3 + norm_fac], c=Colors[Class], ax=ax_dag, alpha = 0.1, colorbar = False)
 
 def plot_phase1(Dagen):
     """Preconditions:  Dagen is een lijst van libraries
