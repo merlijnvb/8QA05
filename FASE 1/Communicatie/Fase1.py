@@ -142,24 +142,22 @@ def plot_phase1(Dagen):
             plot_dagen(Dagen,log,norm)
             
 def make_class(Dag,stb_threshold=25):
-    classA, classB, classC, classD = [], [], [], []
-    
     for ID in Dag:
         if (Dag[ID][1] >= stb_threshold):
             if (Dag[ID][4] >= stb_threshold):
-                classA.append(ID)
+                Dag[ID].append("A")
             else:
-                classB.append(ID)
+                Dag[ID].append("B")
         else:
             if (Dag[ID][4] >= stb_threshold):
-                classC.append(ID)
+                Dag[ID].append("C")
             else:
-                classD.append(ID)
-    return classA, classB, classC, classD            
+                Dag[ID].append("D")
+    return       
             
 def Classes(Dagen):
     for Dag in Dagen:
-        class_tuple = make_class(Dag)
+        make_class(Dag)
     return 
                 
 
@@ -167,10 +165,13 @@ def Main():
     Dagen = make_Days()
     normSig2_add(Dagen)
     Log_add(Dagen)
-    # plot_phase1(Dagen)
-    print(Classes(Dagen))
+    Classes(Dagen)
+    #plot_phase1(Dagen)
+    
+
+            
+            
 
 Main()
-
 
 
