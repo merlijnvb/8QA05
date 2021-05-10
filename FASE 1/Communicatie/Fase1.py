@@ -13,7 +13,7 @@ import numpy as np
 import math
 
 #global variables
-Columns = ['P1Sig', 'P1STB', 'P1Cov', 'P2Sig', 'P2STB', 'P2Cov', 'P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm']
+Columns = ['P1Sig', 'P1STB', 'P1Cov', 'P2Sig', 'P2STB', 'P2Cov', 'P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm', 'Class']
 Day_numbers = [1,2,4,7,14,21,45,90]
 
 def readfile(filename):
@@ -86,15 +86,6 @@ def normalize(Dag_dict):
 def normSig2_add(Dagen):
     for Dag in Dagen:
         normalize(Dag) # normalize functie aanroepen, zodat de normalisatie waardes worden toegevoegd
-        
-def plot_dag(ax_dag,df_dag,x,y):
-    """Preconditions:  Ax is een subplot, df_dag is een dataframe met
-                        de waarden van één dag per index, x en y zijn
-                        de namen van kolommen uit df_dag.
-    Postconditions:    Plot alle datapunten van kolom x en y van de
-                        gegeven dag"""
-    df_dag.plot(kind='scatter', x=x, y=y, c='r', ax=ax_dag)
-    
 
 def plot_dagen(Dagen,log=False,Norm=False):
     """Preconditions:  Dagen is een lijst van libraries, log en
@@ -106,6 +97,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
     # make extra variables
     add_on = '' # for the title
     norm_fac = 0 # for normalisation column index
+    Colors = {'A': 'r', 'B': 'b', 'C': 'g', 'D': 'y'}
     
     # use the booleans
     if log:
@@ -125,13 +117,14 @@ def plot_dagen(Dagen,log=False,Norm=False):
         ax_dag.set_title("Dag "+str(Day_numbers[i]))
         df_dag = pd.DataFrame.from_dict(Dagen[i]).transpose()
         df_dag.columns = Columns
+        df_dag = df_dag.replace({'Class': Colors})
         #check whether we should use the logaritmic columns
         if log:
-            plot_dag(ax_dag,df_dag,Columns[7],Columns[8+norm_fac])
+            df_dag.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c='Class', ax=ax_dag)
             ax_dag.plot([0,5],[0,5], c="k")
         else: 
             ax_dag.plot([0,50000],[0,50000], c="k")
-            plot_dag(ax_dag,df_dag,Columns[0],Columns[3 + norm_fac])
+            df_dag.plot(kind='scatter', x=Columns[0], y=Columns[3 + norm_fac], c='Class', ax=ax_dag)
 
 def plot_phase1(Dagen):
     """Preconditions:  Dagen is een lijst van libraries
@@ -166,12 +159,6 @@ def Main():
     normSig2_add(Dagen)
     Log_add(Dagen)
     Classes(Dagen)
-    #plot_phase1(Dagen)
+    plot_phase1(Dagen)
     
-
-            
-            
-
 Main()
-
-
