@@ -159,7 +159,7 @@ def make_class(Dag,stb_threshold=25):
             
 def Classes(Dagen):
     for Dag in Dagen:
-        a,b,c,d = make_class(Dag)
+        class_tuple = make_class(Dag)
     return 
                 
 
