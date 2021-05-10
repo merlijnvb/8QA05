@@ -98,7 +98,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
     norm_fac = 0 # for normalisation column index
     Colors = {'A': 'r', 'B': 'b', 'C': 'g', 'D': 'y'}
     
-    # use the booleans
+    # use the booleans for the title
     if log:
         add_on += ', logaritmisch'
         if Norm:
@@ -108,7 +108,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
         add_on += ', genormaliseerd'
         norm_fac = 3
     
-    #start plotting
+    # start plotting
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
     fig.suptitle("Visualisatie ruwe data"+add_on,size=24,weight='bold')
     for i in range(len(Dagen)):
@@ -116,15 +116,22 @@ def plot_dagen(Dagen,log=False,Norm=False):
         ax_dag.set_title("Dag "+str(Day_numbers[i]))
         df_dag = pd.DataFrame.from_dict(Dagen[i]).transpose()
         df_dag.columns = Columns
+        # assign color to right class for plotting
         df_dag = df_dag.replace({'Class': Colors})
-        #check whether we should use the logaritmic columns
+        # plot every class per day
         for Class in Colors:
+            # making a DataFrame for every class
             df_dag_new = df_dag[df_dag['Class'] == Colors[Class]]
+            # check whether we should use the logaritmic columns
             if log:
+                # plotting one class
                 df_dag_new.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c=Colors[Class], ax=ax_dag, colorbar = False)
+                # only plot P1 = P2 once, not four times
                 if Class == 'A': ax_dag.plot([0,5],[0,5], c="k")
             else: 
+                # only plot P1 = P2 once, not four times
                 if Class == 'A': ax_dag.plot([0,50000],[0,50000], c="k")
+                # plotting one class
                 df_dag_new.plot(kind='scatter', x=Columns[0], y=Columns[3 + norm_fac], c=Colors[Class], ax=ax_dag, colorbar = False)
             ax_dag.legend(['P1=P2',"A","B","C","D"])
      
