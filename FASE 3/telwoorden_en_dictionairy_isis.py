@@ -39,7 +39,6 @@ def descriptionCloneIDs(gen_description, voorbeeld_cluster_result):
     descriptionCloneIDs() = {}
     
     #alle cloneIDs overeenkomend met die beschrijving 
-    #all cloneIDs corresponding to that description
     for item in range(len(descripton)):
         if description[item] not in desciptionCloneIDs:
             descriptionCloneIDs[description[item]] = [cloneIDs[item]]
