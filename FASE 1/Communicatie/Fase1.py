@@ -194,26 +194,24 @@ def Classes(Dagen,frequences=False):
             for j in range(len(counts)):
                 print("\tFrequentie van", classes[j],"is",counts[j]) 
 
-def rel_exp(Dag):
-    for ID in Dag:
-        if (Dag[ID][0]/Dag[ID][6]) >= 1:
-            r = (Dag[ID][0]/Dag[ID][6]) - 1
-        else:
-            r = (-Dag[ID][6]/Dag[ID][0]) - 1
-        Dag[ID].append('j')
+def add_expression(Dagen):
+    Columns.append("RelativeExpression")
+    for Dag in Dagen:
+        for ID in Dag:
+            if (Dag[ID][0]/Dag[ID][6]) >= 1:
+                r = (Dag[ID][0]/Dag[ID][6]) - 1
+            else:
+                r = (-Dag[ID][6]/Dag[ID][0]) + 1
+            Dag[ID].append(r)
         print(Dag)
 
-def add_exp(Dagen):
-    for Dag in Dagen:
-        rel_exp(Dag)
-    
 def Main():
     Dagen = make_Days()
     normSig2_add(Dagen)
     Log_add(Dagen)
     Classes(Dagen,frequences=True)
     #plot_phase1(Dagen)
-    add_exp(Dagen)
+    add_expression(Dagen)
     
 Main()
 
