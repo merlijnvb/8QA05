@@ -4,7 +4,27 @@ Created on Mon May 17 15:20:21 2021
 
 @author: 20203520
 """
+def TelWoorden(bestandsnaam):
+    infile = open(bestandsnaam)
+    inlines = infile.readlines()
+    infile.close()
+    
+    #print(inlines)
+    dic={}
+    for line in inlines[1::3]:
+        line=line.lower()
+        line=line.replace('(','')
+        line=line.replace(')','')
+        words=line.split()
+        for i in words:
+            if i in dic:
+                dic[i]= dic[i]+1
+            else:
+                dic[i]=1
+    print(dic)         
+    print(len(dic.keys()))
 
+TelWoorden('GenDescription2.txt')
 
 infile_GD = open('GenDescription2.txt')
 inlines_GD = infile_GD.read().split()
