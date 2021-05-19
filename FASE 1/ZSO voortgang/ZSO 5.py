@@ -124,7 +124,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
                 # plotting one class
                 df_dag_new.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c=Colors[Class], ax=ax_dag, colorbar = False)
                 # only plot P1 = P2 once, not four times
-                if Class == 'A': ax_dag.plot([0,5],[0,5], c="k")
+                if Class == 'A': ax_dag.plot([1,5],[1,5], c="k")
             else: 
                 # only plot P1 = P2 once, not four times
                 if Class == 'A': ax_dag.plot([0,50000],[0,50000], c="k")
