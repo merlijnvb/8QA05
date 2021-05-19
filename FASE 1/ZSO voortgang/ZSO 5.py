@@ -93,7 +93,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
     # make extra variables
     add_on = '' # for the title
     norm_fac = 0 # for normalisation column index
-    Colors = {'A': 'r', 'B': 'b', 'C': 'g', 'D': 'y'}
+    Colors = {'A': 'red', 'B': 'blue', 'C': 'green', 'D': 'yellow'}
     
     # use the booleans for the title
     if log:
