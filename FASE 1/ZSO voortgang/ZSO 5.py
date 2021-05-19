@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Apr 29 10:17:49 2021
-@author: irisalmekinders
+@author: iris almekinders en niels van noort
 """
 
 #libraries
