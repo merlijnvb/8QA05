@@ -485,16 +485,16 @@ def return_txt_file(data, name, format_data=lib_data):
     
     #print(lib_unfolded)
     file = open(f'{name}results.txt', 'w')
-    indexes_lost = list()
+    indices_lost = list()
     
     for INDEX in format_data:
         try:
             line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
             file.write(line)
         except:
-            indexes_lost.append(INDEX)
+            indices_lost.append(INDEX)
     
-    print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
+    print(f'Function: {name} --> these indices are lost: {indices_lost}')
         
     file.close()
     
