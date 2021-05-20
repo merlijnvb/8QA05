@@ -95,13 +95,11 @@ def multiple_clusters(data, nr_of_clusters, nr_string_in_cluster):
     for substring in lib_substrings:
         substring_in_clusters = {}
         for clust in clusters:
-            #lib_substrings[substring][clust] = sum(substring in list for list in descriptions[clust])
             data_to_check_in = descriptions[clust]
             length_substring = len(substring)
             count = sum(element[index:index+length_substring] == substring for element in data_to_check_in for index,char in enumerate(element))
             if count >= nr_string_in_cluster:
                 substring_in_clusters[clust] = count
-            #print(substring_in_clusters)
         if len(substring_in_clusters.keys()) == nr_of_clusters:
             lib_substrings[substring] = substring_in_clusters
     
