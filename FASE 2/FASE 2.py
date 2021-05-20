@@ -37,8 +37,8 @@ def file_to_lib(FileName):
 class KMCA:
     def __init__(self, k=6, seed=20):
         '''
-        preconditions:  The number of clusters for, the number of seed for seed, the maximum number of times
-                        you want to itterate over the data
+        preconditions:  k is the number of clusters to be made by the algorithm;
+                        seed is the seed number used by the 'random' module
         postconditions: sets the number of clusters to self.k
                         sets the number of seeds to self.seed
         '''
@@ -47,21 +47,21 @@ class KMCA:
     
     def fit(self, data):
         '''
-        preconditions:  a library with that contains the data. the library must have tehe gene code as key and a list
+        Assigns all genes to their right clusters.
+        preconditions:  data is a library that contains the data. the library must have the gene code as key and a list
                         of the datapoints as value.
         postconditions: returns a library: 
                             keys   --> clusters
-                            values --> genes that are classefied in that cluster
-        this functions task: to assign all genes to its right cluster.
+                            values --> genes that are assigned to that cluster
         '''
         
         self.input_data = data
         
         def E_score():
             '''
+            Calculates the e_score for the clusterd genes.
             preconditions:  /
             postconditions: returns the e_score as an integer.
-            this functions task: calculate the e_score for the clusterd genes 
             '''
             
             mean = 0
@@ -76,9 +76,9 @@ class KMCA:
 
         def normalize():
             '''
+            Normalises the coordinates of all genes.
             preconditions:  /
             postconditions: sets the normalised coordinates as content for the variable self.lib_norm
-            this functions task: normalise the coordinates of all genes
             '''
             
             normalized = dict()
@@ -91,11 +91,11 @@ class KMCA:
         
         def rand_label():
             '''
+            Assigns random genes to clusters.
             preconditions:  /
             postconditions: returs a library:
                                 keys   --> cluster
-                                values --> genes that are random classefied to that cluster
-            this functions task: random assigning genes to a cluster
+                                values --> genes that are randomly assigned to that cluster
             '''
             
             labeld_data = dict()
@@ -117,16 +117,16 @@ class KMCA:
             
         def centroid():
             '''
+            Calculates the centers of the clusters.
             preconditions:  /
             postconditions: returns a library:
                                 keys   --> cluster
                                 values --> list of coordinats for the center of that cluster
-            this functions task: calculating the centers of the clusters
             '''
             
             centroids = dict()
             
-            # CALCULATE THE MEAN VECTOR PER CLUSTER AND SAFE IT AS CENTROID OF THE CLUSTER
+            # CALCULATE THE MEAN VECTOR PER CLUSTER AND SAVE IT AS CENTROID OF THE CLUSTER
             for k in range(1,self.k):
                 centroids[k] = np.mean(np.array([self.lib_norm[index] for index in self.labeled_data[k]]), axis=0) 
 
@@ -134,13 +134,13 @@ class KMCA:
         
         def assign_cluster(unlabeld_data):
             '''
+            Assigns genes to the cluster with the nearest center.
             preconditions:  a library:
                                 keys  --> gen
                                 value --> the normalised coordinates of the gen
             postconditions: a library:
                                 keys  --> cluster
                                 value --> genes classified to that cluster                     
-            this functions task: assigning genes to the cluster with the nearest center
             '''
             
             lib_clust = {k:[] for k in range(1,self.k)}
