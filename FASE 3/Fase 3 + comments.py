@@ -116,32 +116,28 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
             # print(desc)
             desc = desc.replace('(', '')
             desc = desc.replace(')', '')
-            desc_to_check = re.split(', |_|-|!| ', desc)                    # splitst de woorden
+            desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden
             
-            if (len(desc_to_check[0]) > 1) | len(desc_to_check) == 1:
-                substring = desc_to_check[0]   
-            else:
-                substring = desc_to_check[1]
-            lib_substrings[substring] = ''
-                
+            for bes in desc_to_check:
+                if len(bes) > 3:
+                    substring = bes
+                lib_substrings[substring] = ''
+            
     for substring in lib_substrings:
-        substring_in_clusters = {}                                          # maakt nieuwe lege dictionary
+        substring_in_clusters = {}   # maakt nieuwe lege dictionary
         for clust in clusters:
             data_to_check_in = descriptions[clust]               
             length_substring = len(substring)                    # bepaald lengte substring
-            frequency = sum(element[ind:ind+length_substring] == substring for element in data_to_check_in for ind,char in enumerate(element)) 
-            
+            frequency = sum((element[ind:ind+length_substring]).lower() == substring.lower() for element in data_to_check_in for ind,char in enumerate(element)) 
             # telt hoe vaak substrings voorkomen
             if frequency >= nr_string_in_cluster:
                 substring_in_clusters[clust] = frequency
         if len(substring_in_clusters.keys()) == nr_of_clusters:
             lib_substrings[substring] = substring_in_clusters
-    
     keys_to_delete = []                                            # maakt lege lijst om keys te verwijderen
     for key in lib_substrings:
         if (lib_substrings[key] == "") | (len(key) < 3):
             keys_to_delete.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
-    
     for key in keys_to_delete:
         lib_substrings.pop(key)                                   # verwijdert key
         
@@ -164,7 +160,7 @@ def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster):
     lib_cluster_info = get_cluster_description(lib_results, lib_beschrijving)
     lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster)
     
-    return lib_substrings
+    return lib_substrings, lib_beschrijving
 
-lib_substrings = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 2,1)
+lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 6,1)
 print(lib_substrings)
