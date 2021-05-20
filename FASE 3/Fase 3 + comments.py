@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 20 15:01:39 2021
-
-@author: 20202139
-"""
-
-
 import numpy as np
 import re
 
@@ -28,8 +20,7 @@ def lib_res(Filename):
     
     for lines in openfile(Filename):            # splitst de lijnen en voegt de cloneIDs en clusternummers toe aan dictionary
         line = lines.split()
-        lib[int(line[0])] = int(line[1])
-    print(lib)    
+        lib[int(line[0])] = int(line[1])   
     return lib
 
 def lib_beschrijvingen(Filename):
@@ -75,12 +66,12 @@ def lib_beschrijvingen(Filename):
         
     return beschrijvingdict
 
-def get_description(input_data, refrence_data):
-    lib_refrence = dict()                                                     # maakt nieuwe dictionary aan
+#def get_description(input_data, refrence_data):
+    # lib_refrence = dict()                                                     # maakt nieuwe dictionary aan
     
-    for ID in input_data:
-        lib_refrence[ID] = refrence_data[ID]                                  # voegt de beschrijvingsdictionary toe aan de nieuwe dictionary
-    return lib_refrence
+    # for ID in input_data:
+    #     lib_refrence[ID] = refrence_data[ID]                                  # voegt de beschrijvingsdictionary toe aan de nieuwe dictionary
+    # return lib_refrence
 
 def get_cluster_description(results, refrence_data):
     cluster_discription = dict()                                                # maakt nieuwe dictionary aan
@@ -93,7 +84,7 @@ def get_cluster_description(results, refrence_data):
     
     return cluster_discription
 
-def multiple_clusters(data, nr_of_clusters, nr_string_in_cluster):
+def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
     '''
     preconditions: 
         - data --> library:
@@ -122,7 +113,11 @@ def multiple_clusters(data, nr_of_clusters, nr_string_in_cluster):
     for clust in clusters:
         data_to_check = descriptions[clust]                                 
         for desc in data_to_check:
+            # print(desc)
+            desc = desc.replace('(', '')
+            desc = desc.replace(')', '')
             desc_to_check = re.split(', |_|-|!| ', desc)                    # splitst de woorden
+            
             if (len(desc_to_check[0]) > 1) | len(desc_to_check) == 1:
                 substring = desc_to_check[0]   
             else:
@@ -144,7 +139,7 @@ def multiple_clusters(data, nr_of_clusters, nr_string_in_cluster):
     
     keys_to_delete = []                                            # maakt lege lijst om keys te verwijderen
     for key in lib_substrings:
-        if lib_substrings[key] == "":
+        if (lib_substrings[key] == "") | (len(key) < 3):
             keys_to_delete.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
     
     for key in keys_to_delete:
@@ -167,7 +162,7 @@ def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster):
     lib_results = lib_res(Filename_res)
     lib_beschrijving = lib_beschrijvingen(Filename_bes)
     lib_cluster_info = get_cluster_description(lib_results, lib_beschrijving)
-    lib_substrings = multiple_clusters(lib_cluster_info, clusters, in_cluster)
+    lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster)
     
     return lib_substrings
 
