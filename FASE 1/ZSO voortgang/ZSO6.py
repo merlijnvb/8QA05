@@ -258,6 +258,20 @@ def filtering(rDict, Filterinfo):
         if (Filterinfo[ID][0] + Filterinfo[ID][2] < 3) and (Filterinfo[ID][1] == 0) and (Filterinfo[ID][3] < 8):
             filtered_rDict[ID] = rDict[ID]
     return filtered_rDict
+
+def file_phase3(rDict):
+    outf = open('Ruwe Data Fase 3.txt', 'w')
+    
+    for ID in rDict:
+        outf.write(str(ID))
+        outf.write('\t')
+        r_values = []
+        for i in rDict[ID]:
+            r_values.append(str(i))
+        outf.write('\t'.join(r_values))
+        outf.write('\n')
+        
+    outf.close()
     
 def Main():
     Dagen = find_files('dag')
@@ -267,6 +281,7 @@ def Main():
     add_expression(Dagen)
     rDict, Filterinfo = Daysdict(Dagen)
     filtered_rDict = filtering(rDict, Filterinfo)
+    file_phase3(rDict)
     # bar_plots(rDict,0.5)
     # plot_phase1(Dagen)
     
