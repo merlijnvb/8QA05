@@ -477,26 +477,26 @@ def return_txt_file(data, name, format_data=lib_data):
                    format_data library, indicating how to format the data to a text file
    postconditions: returns a text file
    '''
-    lib_unfolded = dict()
+   lib_unfolded = dict()
     
-    for cluster in data:
-        for ID in data[cluster]:
-            lib_unfolded[ID] = cluster
+   for cluster in data:
+       for ID in data[cluster]:
+           lib_unfolded[ID] = cluster
     
-    #print(lib_unfolded)
-    file = open(f'{name}results.txt', 'w')
-    indices_lost = list()
+   #print(lib_unfolded)
+   file = open(f'{name}results.txt', 'w')
+   indices_lost = list()
     
-    for INDEX in format_data:
-        try:
-            line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
-            file.write(line)
-        except:
-            indices_lost.append(INDEX)
+   for INDEX in format_data:
+       try:
+           line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+           file.write(line)
+       except:
+           indices_lost.append(INDEX)
     
-    print(f'Function: {name} --> these indices are lost: {indices_lost}')
+   print(f'Function: {name} --> these indices are lost: {indices_lost}')
         
-    file.close()
+   file.close()
     
 return_txt_file(kmca_result, 'kmca_')
 return_txt_file(gca_results, 'gca_')
