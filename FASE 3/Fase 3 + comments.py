@@ -84,6 +84,18 @@ def get_cluster_description(results, refrence_data):
     
     return cluster_discription
 
+verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs',
+                      'like', 'acid-rich', 'adhesion', 'affinity', 'activity', 'alpha-like', 'anion', 'assembly',
+                      'association', 'basic', 'candidate', 'carbon', 'coenzyme', 'cofactor', 'coiled-coil',
+                      'coiled-coil-helix-coiled-coil-helix', 'cold', 'double', 'domain-containing', 'enabled',
+                      'fast', 'four', 'glucose', 'half', 'hand', 'inner', 'insert', 'inorganic', 'isoenzyme',
+                      'molecule', 'mouse', 'never', 'neighbor', 'nitrogen', 'omega', 'only', 'organic', 'outer', 'paired',
+                      'partner', 'region', 'ring', 'slow', 'similarity', 'system', 'very', '3-like', 'beta-like',
+                      'coenzyme', 'complex', 'constant', 'component', 'dependent', 'early', 'light', 'long',
+                      'protein-like', 'short', '1-like', 'activated', 'group', 'high', 'nine', 'small', 'cell',
+                      'chain', 'heavy', 'with', 'acid', 'alpha', 'beta', 'associated', 'containing', 'gamma',
+                      'gene', 'inter', 'rich', 'type', 'repeat'] 
+
 def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
     '''
     preconditions: 
@@ -135,8 +147,9 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
         if len(substring_in_clusters.keys()) == nr_of_clusters:
             lib_substrings[substring] = substring_in_clusters
     keys_to_delete = []                                            # maakt lege lijst om keys te verwijderen
+    keys_to_delete = verwijderen
     for key in lib_substrings:
-        if (lib_substrings[key] == "") | (len(key) < 3):
+        if (lib_substrings[key] == "") | (len(key) < 3 | (key.lower() in keys_to_delete())):
             keys_to_delete.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
     for key in keys_to_delete:
         lib_substrings.pop(key)                                   # verwijdert key
