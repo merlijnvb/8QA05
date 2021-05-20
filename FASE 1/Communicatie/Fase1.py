@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 Created on Thu Apr 29 10:17:49 2021
-
-@author: irisalmekinders
+@author: Iris Almekinders en Niels van Noort
 """
 
 #libraries
@@ -14,15 +14,26 @@ import math
 
 #global variables
 Columns = ['P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm', 'Class']
-Day_numbers = [1,2,4,7,14,21,45,90]
+Day_numbers = []
 
-def make_filelist():
+def find_files(file_key_word):
     """returns list of textfilenames based on Day_numbers"""
+    from os import listdir
+    from pathlib import Path
+    
+    arr = listdir(Path(__file__).parent.absolute())
+    filenames = [filename for filename in arr if f'{file_key_word}' in filename]
+    
+    day_nrs = [name.replace('.txt','') for name in filenames]
+    day_nrs = [int(name.replace(f'{file_key_word}','')) for name in day_nrs]
+    day_nrs.sort()
+    
     filenames = []
-    for number in Day_numbers:
+    for number in day_nrs: 
+        Day_numbers.append(number)
         filenames.append("dag"+str(number)+".txt")
-    return filenames
         
+    return [readfile(filename) for filename in filenames]        
 
 def readfile(filename):
     """Preconditions:  Filename is de naam van een .txt bestand dat te vinden
@@ -62,12 +73,6 @@ def summation(Dag_dict,column_head):
         total += int(Dag_dict[key][Columns.index(column_head)])
     return total
 
-def logaritm(Dag_dict):
-    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende 
-                        waarden.
-    Postconditions:    Zet P1Sig, P2Sig en P2SigNorm in een logaritme en voegt 
-                        deze toe aan de dictionary."""
-
 def Log_add(Dagen):
     """Preconditions:  dagen is een lijst van dictionaries met per ID de 
                         bijbehorende waarden.
@@ -78,20 +83,17 @@ def Log_add(Dagen):
             Dag_dict[key].append(math.log10(Dag_dict[key][0]))
             Dag_dict[key].append(math.log10(Dag_dict[key][3]))
             Dag_dict[key].append(math.log10(Dag_dict[key][6]))
-   
-def normalize(Dag_dict):
-    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende 
-                        waarden.
-    Postconditions:    Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan
-                        de dictionary."""
-    S1 = summation(Dag_dict, "P1Sig") # optellen van alle P1Sig waardes
-    S2 = summation(Dag_dict, "P2Sig") # optellen van alle P2Sig waardes
-    for key in Dag_dict:
-        Dag_dict[key].append(int(Dag_dict[key][3])*S1/S2)
 
 def normSig2_add(Dagen):
+    """Preconditions:  Dagen is een lijst van dictionaries met per ID de 
+                        bijbehorende waarden.
+    Postconditions:    Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan
+                        elke dictionary."""
     for Dag in Dagen:
-        normalize(Dag) # normalize functie aanroepen, zodat de normalisatie waardes worden toegevoegd
+        S1 = summation(Dag, "P1Sig") # optellen van alle P1Sig waardes
+        S2 = summation(Dag, "P2Sig") # optellen van alle P2Sig waardes
+        for key in Dag:
+            Dag[key].append(int(Dag[key][3])*S1/S2)
 
 def plot_dagen(Dagen,log=False,Norm=False):
     """Preconditions:  Dagen is een lijst van libraries, log en
@@ -103,7 +105,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
     # make extra variables
     add_on = '' # for the title
     norm_fac = 0 # for normalisation column index
-    Colors = {'A': 'r', 'B': 'b', 'C': 'g', 'D': 'y'}
+    Colors = {'A': 'red', 'B': 'blue', 'C': 'green', 'D': 'yellow'}
     
     # use the booleans for the title
     if log:
@@ -134,7 +136,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
                 # plotting one class
                 df_dag_new.plot(kind='scatter', x=Columns[7], y=Columns[8+norm_fac], c=Colors[Class], ax=ax_dag, colorbar = False)
                 # only plot P1 = P2 once, not four times
-                if Class == 'A': ax_dag.plot([0,5],[0,5], c="k")
+                if Class == 'A': ax_dag.plot([1,5],[1,5], c="k")
             else: 
                 # only plot P1 = P2 once, not four times
                 if Class == 'A': ax_dag.plot([0,50000],[0,50000], c="k")
@@ -194,7 +196,9 @@ def Classes(Dagen,frequences=False):
             for j in range(len(counts)):
                 print("\tFrequentie van", classes[j],"is",counts[j]) 
 
+
 def add_expression(Dagen):
+    """Voegt de relatieve expressiewaarde toe aan de bestaande dictionaries."""
     Columns.append("RelativeExpression")
     for Dag in Dagen:
         for ID in Dag:
@@ -203,16 +207,75 @@ def add_expression(Dagen):
             else:
                 r = (-Dag[ID][6]/Dag[ID][0]) + 1
             Dag[ID].append(r)
-        print(Dag)
+
+def Daysdict(Dagen,r_filter=0.5):
+    """New_Dagen is een dictionary met per ID de r voor elke dag"""
+    New_Dagen = {}
+    Filterinfo = {}
+    
+    for ID in Dagen[0]:
+        Rvals = list()
+        filterinfo = []
+        Filterinfo[ID] = [0,0,0,0]
+        Filterinfo[ID][2] = Dagen[0][ID][2]
+        
+        for i in range(len(Day_numbers)):
+            Rvals.append(Dagen[i][ID][-1]) 
+            if -r_filter < Dagen[i][ID][-1] < r_filter: Filterinfo[ID][3] +=1 # counter voor hoevaak r < filterwaarde
+            filterinfo.append(Dagen[i][ID][10])
+    
+        for class_name in filterinfo:
+            if (class_name == "B") or (class_name == "C"): Filterinfo[ID][0] += 1
+            if class_name == "D": Filterinfo[ID][1] += 1
+            
+        New_Dagen[ID] = Rvals
+    return New_Dagen, Filterinfo
+    
+def bar_plots(rDict,r_filter=0.5,movement = 256):
+    """ grootste voortgang van ZSO 5
+    maakt 256 hele mooie barplots --> nutteloos voor fase 1 :) """
+    # ncols = math.ceil(len(rDict)**0.5)
+    ncols = 10
+    nrows = ncols
+    fig, ax = plt.subplots(ncols,nrows,figsize=(40,40),squeeze=False,sharex=True,sharey=True)
+    fig.suptitle("Fucking veel lijndiagrammen",size=60,weight='bold') # this will be changed... for now we're a bit pissed at the number of plots and the time it takes to draw them
+    df_expr = pd.DataFrame.from_dict(rDict)
+    for col in range(ncols):
+        for row in range(nrows):
+            ID = df_expr.columns[col*ncols+row+movement]
+            df_expr[ID].plot(ax=ax[row,col])
+            ax[row,col].set_title(str(ID))
+            ax[row,col].axhline(y=r_filter)
+            ax[row,col].axhline(y=-r_filter)
+
+def filtering(rDict, Filterinfo):
+    """er komt Dagen in en gaat vervolgens per ID kijken hoevaak classes B en c
+    voorkomen, hoevaak de spotgrootte te laag is en of r ooit boven de r_filter
+    uitkomt."""
+    filtered_rDict = {}
+    
+    for ID in rDict:
+        if (Filterinfo[ID][0] == 0) and (Filterinfo[ID][1] == 0) and ((Filterinfo[ID][2] >= 40) and (Filterinfo[ID][2] <= 160)) and (Filterinfo[ID][3] < 8):
+            filtered_rDict[ID] = rDict[ID]
+    return len(filtered_rDict)
+    
+    
+    
 
 def Main():
-    Dagen = make_Days()
+    Dagen = find_files('dag')
     normSig2_add(Dagen)
     Log_add(Dagen)
     Classes(Dagen,frequences=True)
-    #plot_phase1(Dagen)
     add_expression(Dagen)
+    rDict, Filterinfo = Daysdict(Dagen)
+    print(Filterinfo)
+    #print(filtering(rDict, Filterinfo))
+    # bar_plots(rDict,0.5)
+    # plot_phase1(Dagen)
     
 Main()
+
+
 
 
