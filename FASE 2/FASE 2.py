@@ -37,8 +37,8 @@ def file_to_lib(FileName):
 class KMCA:
     def __init__(self, k=6, seed=20):
         '''
-        preconditions:  k is the number of clusters to be made by the algorithm;
-                        seed is the seed number used by the 'random' module
+        preconditions:  The number of clusters for, the number of seed for seed, the maximum number of times
+                        you want to itterate over the data
         postconditions: sets the number of clusters to self.k
                         sets the number of seeds to self.seed
         '''
@@ -47,21 +47,21 @@ class KMCA:
     
     def fit(self, data):
         '''
-        Assigns all genes to their right clusters.
-        preconditions:  data is a library that contains the data. the library must have the gene code as key and a list
+        preconditions:  a library with that contains the data. the library must have tehe gene code as key and a list
                         of the datapoints as value.
         postconditions: returns a library: 
                             keys   --> clusters
-                            values --> genes that are assigned to that cluster
+                            values --> genes that are classefied in that cluster
+        this functions task: to assign all genes to its right cluster.
         '''
         
         self.input_data = data
         
         def E_score():
             '''
-            Calculates the e_score for the clusterd genes.
             preconditions:  /
             postconditions: returns the e_score as an integer.
+            this functions task: calculate the e_score for the clusterd genes 
             '''
             
             mean = 0
@@ -76,9 +76,9 @@ class KMCA:
 
         def normalize():
             '''
-            Normalises the coordinates of all genes.
             preconditions:  /
             postconditions: sets the normalised coordinates as content for the variable self.lib_norm
+            this functions task: normalise the coordinates of all genes
             '''
             
             normalized = dict()
@@ -91,11 +91,11 @@ class KMCA:
         
         def rand_label():
             '''
-            Assigns random genes to clusters.
             preconditions:  /
             postconditions: returs a library:
                                 keys   --> cluster
-                                values --> genes that are randomly assigned to that cluster
+                                values --> genes that are random classefied to that cluster
+            this functions task: random assigning genes to a cluster
             '''
             
             labeld_data = dict()
@@ -117,16 +117,16 @@ class KMCA:
             
         def centroid():
             '''
-            Calculates the centers of the clusters.
             preconditions:  /
             postconditions: returns a library:
                                 keys   --> cluster
                                 values --> list of coordinats for the center of that cluster
+            this functions task: calculating the centers of the clusters
             '''
             
             centroids = dict()
             
-            # CALCULATE THE MEAN VECTOR PER CLUSTER AND SAVE IT AS CENTROID OF THE CLUSTER
+            # CALCULATE THE MEAN VECTOR PER CLUSTER AND SAFE IT AS CENTROID OF THE CLUSTER
             for k in range(1,self.k):
                 centroids[k] = np.mean(np.array([self.lib_norm[index] for index in self.labeled_data[k]]), axis=0) 
 
@@ -134,13 +134,13 @@ class KMCA:
         
         def assign_cluster(unlabeld_data):
             '''
-            Assigns genes to the cluster with the nearest center.
             preconditions:  a library:
                                 keys  --> gen
                                 value --> the normalised coordinates of the gen
             postconditions: a library:
                                 keys  --> cluster
-                                value --> genes assigned to that cluster                     
+                                value --> genes classified to that cluster                     
+            this functions task: assigning genes to the cluster with the nearest center
             '''
             
             lib_clust = {k:[] for k in range(1,self.k)}
@@ -178,11 +178,11 @@ class KMCA:
     
     def optimize(self, min_seed=0, max_seeds=30):
         '''
-        Clusters the data multiple times with different initial clusterings, and chooses the best result.
-        preconditions:  min_seed,max_seed: range of which seeds to try
+        preconditions:  min,max seed: range to loop the seeds in
         postconditions: a library:
                             keys  --> cluster
-                            value --> genes assigned to that cluster                     
+                            value --> genes classified to that cluster                     
+        this functions task: assigning genes to the cluster with the best centroids
         '''
         
         # START WITH THE BIGGEST POSSIBLE #NR SO THE FIRST TESTED SEED IS ALWAYS LOWER THAN THIS #NR SO THE IF STATEMENT WORKS CORRECTLY
@@ -194,7 +194,7 @@ class KMCA:
             self.fit(self.input_data)
             new_e = self.E_score
             
-            # COMPARE THE NEWLY GENERATED E-SCORE WITH THE OLD-BEST E-SCORE --> IF NEWLY GENERATED E-SCORE IS BETTER THEN THE LAST ONE, SAVE IT
+            # COMPARE THE NEWLY GENERATED E-SCORE WITH THE OLD-BEST E-SCORE --> IF NEWLY GENERATED E-SCORE IS BETTER THEN THE LAST ONE SAFE IT
             if new_e < old_e: 
                 best_labeld_data = self.labeled_data
                 best_seed = seed
@@ -206,14 +206,6 @@ class KMCA:
         
     
     def predict(self, input_data):
-        '''
-        Assigns new input data to its nearest cluster, according to previously determined centroids that are not affected by this new data.
-        preconditions: input_data is either a dictionary of datapoints or a single datapoint (a list of coordinates)
-        postconditions: a library:
-                             keys  --> cluster
-                             value --> genes assigned to that cluster
-               
-        '''
         lib_clust = {k:[] for k in range(1,self.k)}
         
         # CHECK IF INPUT TYPE CONTAINS MULTIPLE DATA POINTS OR JUST A SINGLE DATA POINT:
@@ -261,54 +253,53 @@ class GCA:
     
     def fit(self, data):
         '''
-        Assigns all genes to grid cells.
         preconditions:  a library with that contains the data. the library must have the gene code as key and a list
                         of the datapoints as value.
         postconditions: returns a library: 
                             keys   --> clusters
                             values --> unique cell ID
+        this functions task: to assign all genes to a cell.
         '''
         self.indexes = list(data.keys())
 
-        def get_cordinates(data):
+        def axis_data(data):
             '''
-            Returns a library with as key every axis and as value a tuple of all value of the axis.
             preconditions:  a library with that contains the data. the library must have tehe gene code as key and a list
                             of the datapoints as value.
             postconditions: returns a library: 
                                 keys   --> axis
                                 values --> list of all values in that specific axis
+            this functions task: returning a library with as key every axis and as value a tuple of all value of the axis.
             '''
             cordinates = dict()
 
-            for cor in range(len(data[self.indexes[0]])): # GET THE GENERAL LENGTH OF THE CORDINATES --> SO FOR EVERY AXIS THERE WILL BE A LIST
+            for cordinate in range(len(data[self.indexes[0]])): # GET THE GENERAL LENGTH OF THE CORDINATES --> SO FOR EVERY AXIS THERE WILL BE A LIST
                 x = list()
-                for i in data: # GET EVERY PROTEIN ID IN THE DATA DICTIONARY
-                    x.append(float(data[i][cor]))  # APPEND THE AXIS LIST WITH THE CORROSPONDING AXIS FROM EVERY PROTEIN
+                for index in data: # GET EVERY PROTEIN ID IN THE DATA DICTIONARY
+                    x.append(float(data[index][cordinate]))  # APPEND THE AXIS LIST WITH THE CORROSPONDING AXIS FROM EVERY PROTEIN
 
-                cordinates[cor] = tuple(x) # MAKE TUPLE OF THE AXIS VALUES
+                cordinates[cordinate] = np.array(x) # MAKE TUPLE OF THE AXIS VALUES
             return cordinates
 
-        def get_intervals(data,j):
+        def interval_data(axis_data):
             '''
-            Returns a library with the subspaces of the data sorted on the axis.
             preconditions:  a library that contains the axis-data.
             postconditions: return per axis the intervals of the subspaces
+            this functions task: returning a library with the subspaces of the data sorted on the axis.
             '''
             dic = dict()
 
             # GET THE RANGE (MIN-MAX) OF EVERY AXIS --> SO SUB-CELLS CAN BE MADE IN THIS RANGE
-            for i in data:
-                minim = np.min(data[i])
-                maxim = np.max(data[i])
+            for axis in axis_data:
+                minim = np.min(axis_data[axis])
+                maxim = np.max(axis_data[axis])
 
-                dic[i] = np.mgrid[minim:maxim:complex(0,j)] # J IS THE #NR OF INTERVALLS WE WANT EVERY AXIS
+                dic[axis] = np.mgrid[minim:maxim:complex(0,self.j)] # J IS THE #NR OF INTERVALLS WE WANT EVERY AXIS
 
             return dic
 
-        def get_cells():
+        def apply_grid(data):
             '''
-            Returns a library with gene ID as key and as value the unique cel ID.
             preconditions:  - a library with that contains the data. the library must have tehe gene code as key and a list
                               of the datapoints as value. 
                             - a library with the intervals
@@ -316,135 +307,91 @@ class GCA:
             postconditions: returns a library: 
                                 keys   --> gene ID
                                 values --> unique cel ID
+            this functions task: returning a library with gene ID as key and as value the unique cel ID.
             '''
-            cordinates = get_cordinates(data) # GET AXIS DATA
-            intervals = get_intervals(cordinates,self.j) # GET INTERVAL DATA FROM AXIS DATA --> TO MAKE CONDITIONS FOR CELL GENERATION
+            grid = list()
+            self.lib_cells = dict()
             
-            labels = list()
+            lib_cords = axis_data(data)
+            lib_interv = interval_data(lib_cords)
             
-            # CELL-ID GENERATION VERTICALLY:
-            # --> FOR EVERY AXIS A LIST IS GENERATED WITH THE SUBSPACE INDEX (THIS IS A #NR WHICH RANGES FROM 0 TO THE MAX NUMBER OF SUBSPACES THAT CAN BE MADE)
-            for i in cordinates: # LOOP OVER EVERY AXIS
-                x_inter_label = list() # MAKE NEW LIST FOR EVERY AXIS
-                for j in range(1,len(intervals[i])): # LOOP OVER THE CONDITIONS FOR EVERY AXIS --> INTERVALS
-                    # MAKE A LIST WHICH CONTAINS OF TRUE OR FALSE STATEMENS --> DUE TO THE CONDITIONS THAT ARE IMPOSED
-                    # --> A LIST OF THE LENGTH OF EVERY AXIS IS RETURNED
-                    vals = list((cordinates[i] >= intervals[i][j-1]) & (cordinates[i] < intervals[i][j])) # MAKE BOOLEAN LIST 
-                    vals = np.where(vals==False, 0, vals) # IF CONDITIONS ARE NOT MET SET VALUE TO 0
-                    vals = np.where(vals==True, j, vals) # IF CONDITIONS ARE MET SET VALUE TO THE CORRESPONDING SUBSPACE THE VALUE BELONGS TO      
-
-                    x_inter_label.append(vals) # APPEND THE LIST WITH THE GATHERD SUBSPACE INDEXES
-
-                labels.append(x_inter_label) # APPEND THE LABELS LIST WITH THE LISTS CONTAINTING THE IDNEXES OF THE SUBSPACES PER AXIS
-
-
-            # REWRITE THE LABELS LIST TO A LIST THAT CONTAIS A LIST WITH THE CORRESPONDING SUBSPACE INDEXES PER PROTEIN
-            # THE LABELS LIST CONTAINS PER AXIS A NUMBER OF LISTS FOR EVERY SUB-SPACE. TO COMBINE THESE LISTS, THEY CAN SIMPLY BE ADDED TO EACHOTHER
-                # IF THE DATA DID NOT SATISFY THE CONDITIONS THE #NR 0 WAS AWARDED 
-                # IF THE DATA DID SATISFY THE CONDITIONS THE #NR OF THE SUBSPACE WAS AWARDED
-            # --> THE NR OF THE SUBSPACE THAT IS CORRECTLY AWARDED TO THE VALUE IS NOT INFLUENCED WHEN WE ADD 0 TO IT (EVEN IF THE SUBSPACE AWARDED WAS 0, THEN IT REMAINS 0)
-            # --> SO IF WE ADD UP THE LIST OF ALL SUBSPACE OPTIONS WE GET A SINGLE LIST OF SUBSPACES PER PROTEIN ID PER AXIS
-            labelzz = list()
-            for i in range(len(labels)):
-                for k in range(1,len(labels[i])):
-                    labels[i][0] = np.add(labels[i][0],labels[i][k])
-                labelzz.append(labels[i][0])
-
-            del labels
-
-            self.lib_cells = dict()     
+            for axis in lib_cords:
+                for subspace in range(1,len(lib_interv[axis])):
+                    lib_cords[axis][(lib_cords[axis] > lib_interv[axis][subspace-1]) & (lib_cords[axis] < lib_interv[axis][subspace])] = subspace
+                
+                grid.append(lib_cords[axis])
             
-            # SAVE THE LABELZZ LIST IN A DICTIONARY WITH AS KEY THE PROTEIN ID AND AS VALUE THE CELL-ID WICH IS A LIST CONTAINING THE INDEXES OF THE SUBSPACES
-            for i in range(len(labelzz[0])):
-                cell_id = list()
-                for j in range(len(labelzz)):
-                    cell_id.append(labelzz[j][i])
-
-                self.lib_cells[self.indexes[i]] = cell_id
-            
-            
+            for i in range(len(self.indexes)):
+                self.lib_cells[self.indexes[i]] = list()
+                
+                for axis in grid:
+                    self.lib_cells[self.indexes[i]].append(int(axis[i]))
+                    
             return self.lib_cells
-        return get_cells()
+                
+        return apply_grid(data)
         
-    def self_predict(self, cell_ids):
+    def clustering(self, cell_ids):
         '''
-        Assign all genes to their right clusters.
         preconditions:  a library with that contains the data. the library must have the gene code as key and a list
                         of the datapoints as value.
         postconditions: returns a library: 
                             keys   --> clusters
-                            values --> genes that are assigned to that cluster
+                            values --> genes that are classefied in that cluster
+        this functions task: to assign all genes to its right cluster.
         '''
-        def get_neigb_id(ID):
+        def get_neigbours(ID):
             '''
-            Returns neighbour cell ID's.
-            preconditions:  a cell ID
+            preconditions:  a cell ID.  
             postconditions: returns a list with all the IDs of the neigboring cells
+            this functions task: returning neigbor cel IDs.
             '''
             neigb = list()
-            #GET EVERY NEIGBOUR OF THE INPUT-CELL:
+            #GET EVERY NEIGBOR OF THE INPUT-CELL:
             for indx in cell_ids: # LOOP OVER EVERY CELL-INDEX THAT IS GENERATED
                 # THE DISTANCE TO THE INPUT-CELL IS A FORM OF MANHATTAN DISTANCE --> SUBTRACT EVERY SUBSPACE-ID FROM THE INPUT-CELL SUBSPACES
                 # --> WHEN THE OUTCOME OF EVERY SUBSPACE OF A CELL-ID IS IN THE SET RANGE, IT CAN BE SEEN AS A NEIGBOR
                 distance = np.subtract(self.lib_cells[ID],self.lib_cells[indx],out=np.array([0 for i in range(8)])) 
                 if all([-self.r < i < self.r for i in distance]): # CHECK IF ALL THE VALUES OF THE SUBSTRACTION (in distance) ARE IN RANGE
-                    neigb.append(indx) # APPEND THE NEIGBOUR LIST WITH THE PROTEIN ID OF THE NEIGBOUR
+                    neigb.append(indx) # APPEND THE NEIGBOR LIST WITH THE PROTEIN ID OF THE NEIGBOR
 
+            neigb.remove(ID)
+            
             return neigb
-
-        new_indexes = self.indexes.copy() # MAKE DUMMY LIST OF THE PROTEIN IDs
-
-        def make_groups(data_point):
-            '''
-            Returns a group/cluster.
-            preconditions:  a cell ID
-            postconditions: returns a list with all the neigbours of neigbours that originated from the first cell
-            '''
-            neigbors = get_neigb_id(data_point) # GET THE FIRST NEIGBORS OF A DATAPOINT (PROTEIN ID)
-            new_neigbors = list()
-
-            for cel in neigbors: # GATHER FOR EVERY NEIGBOUR IF IT HAS NEW UNIQUE NEIGBOURS
-                new_cells = get_neigb_id(cel)
-
-                for new_cel in new_cells:
-                    if new_cel not in neigbors: # CHECK IF NEIGBOUR IS UNIQUE
-                        new_neigbors.append(new_cel)
+    
+        lib_cluster = dict()
+        def get_all_neigbours(ID,location):
+            self.group += get_neigbours(ID)
+            self.group = list(np.unique(self.group))
+            
+            location += 1
+                        
+            if len(self.group) > location:
+                get_all_neigbours(self.group[location], location)
+        
+        def make_clusters(indexes, clust_nr=1):
+            if len(indexes) > 0:
+                indexes = indexes.copy()
                 
-                # ADD NEWLY FOUND NEIGBOURS TO THE ORIGINAL NEIGBOURS LIST
-                neigbors += new_neigbors
-
-            for neigb in neigbors: 
-                # REMOVE ALL THE NEIGBOURS WHICH ARE ALREADY ASSIGNED FROM THE DUMMY PROTEIN INDEX LIST
-                new_indexes.remove(neigb)
-
-            return neigbors
-
-        options = list()
-
-        # RUN THE MAKE GROUPS ON THE DUMMY LIST --> SO THAT WE DO NOT HAVE DUPLICATE GROUPS
-        # --> MAKES THE PROGRAM FASTER --> NO UNNECESSARY CALCULATIONS
-        for index in new_indexes:
-            options.append(make_groups(index))
-
-
-        self.labeled_data = dict()
-        cluster = 0
-        anti_cluster = -1
-
-        # CHECK IF GROUPS CONTAIN ENOUGH DATAPOINTS TO BE APPOINTED TO A CLUSTER
-        # IF NOT --> GIVE IT AN ANTI-CLUSTER --> SO WE CAN DISTINGUISH THE DATA THAT IS NOT ASSIGNED TO A CLUSTER/GROUP 
-        for i in range(len(options)):
-            if len(options[i]) > self.tresh:
-                self.labeled_data[cluster] = options[i]
-                cluster += 1
-            else:
-                self.labeled_data[anti_cluster] = options[i]
-                anti_cluster -= 1
-
-        return self.labeled_data
-
-
-
+                self.group = list()
+                get_all_neigbours(indexes[0], -1)
+                
+                if len(self.group) == 0:
+                    cluster_group = indexes[0]
+                    indexes.remove(cluster_group)
+                else:    
+                    cluster_group = self.group
+                    for index in cluster_group:
+                        indexes.remove(int(index))
+                
+                lib_cluster[clust_nr] = cluster_group
+                clust_nr += 1
+                make_clusters(indexes, clust_nr)
+                
+            return lib_cluster
+        self.lib_cluster = make_clusters(self.indexes, 1)
+        
+        return self.lib_cluster
 """
 
     GET RESULTS BY CALLING CLASSES
@@ -458,10 +405,9 @@ kmca = KMCA()
 kmca.fit(lib_data)
 kmca_result, kmca_best_seed, kmca_e_score = kmca.optimize(10,30)
 
-gca = GCA()
+gca = GCA(r=2, j=6)
 gca_fit_data = gca.fit(lib_data)
-gca_results = gca.self_predict(gca_fit_data)
-
+gca_results = gca.clustering(gca_fit_data)
 
 """
 
@@ -469,34 +415,31 @@ gca_results = gca.self_predict(gca_fit_data)
     
 """
 
+# --> needs to be aangepast nog een klein beetje in regel 424
+
 def return_txt_file(data, name, format_data=lib_data):
-   '''
-   Converts the input data to a text file.
-   preconditions:  data is a library with all clusters as keys, and the genes assigned to each key as values;
-                   name is a string of the desired name of the text file;
-                   format_data library, indicating how to format the data to a text file
-   postconditions: returns a text file
-   '''
-   lib_unfolded = dict()
+    lib_unfolded = dict()
     
-   for cluster in data:
-       for ID in data[cluster]:
-           lib_unfolded[ID] = cluster
+    for cluster in data:
+        if type(data[cluster]) == int:
+            lib_unfolded[data[cluster]] = cluster
+        for ID in data[cluster]:
+            lib_unfolded[ID] = cluster
     
-   #print(lib_unfolded)
-   file = open(f'{name}results.txt', 'w')
-   indices_lost = list()
+    #print(lib_unfolded)
+    file = open(f'{name}results.txt', 'w')
+    indexes_lost = list()
     
-   for INDEX in format_data:
-       try:
-           line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
-           file.write(line)
-       except:
-           indices_lost.append(INDEX)
+    for INDEX in format_data:
+        try:
+            line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+            file.write(line)
+        except:
+            indexes_lost.append(INDEX)
     
-   print(f'Function: {name} --> these indices are lost: {indices_lost}')
+    print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
         
-   file.close()
+    file.close()
     
 return_txt_file(kmca_result, 'kmca_')
 return_txt_file(gca_results, 'gca_')
