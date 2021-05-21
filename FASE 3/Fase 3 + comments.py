@@ -1,5 +1,13 @@
-import numpy as np
 import re
+
+'''variables:'''
+Filename_res = 'Voorbeeld_clusterresult.txt'
+Filename_bes = 'GenDescription2.txt'
+in_cluster = 1
+clusters = 1
+extra_verwijderen = []
+lengt_ignored = 1
+
 
 def lib_res(Filename):
     '''
@@ -111,7 +119,7 @@ verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs
                       'chain', 'heavy', 'with', 'acid', 'alpha', 'beta', 'associated', 'containing', 'gamma',
                       'gene', 'inter', 'rich', 'type', 'repeat'] 
 
-def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
+def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen, lengt_ignored, extra_verwijderen=[]):
     '''
     preconditions: 
         - data --> library:
@@ -120,6 +128,8 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
         - nr_of_clusters --> in hoeveel clusters de substring voor moet komen
         - nr_string_in_cluster --> hoevaak de substring minimaal in het 
                                     cluster voor moet komen
+        - extra_verwijdere --> als er woorden zijn die je niet wilt hebben
+                                kan je die in een list meegeven aan deze lijst
                                     
     postconditions:
         return een library (lib_substrings):
@@ -130,6 +140,7 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
     taak:
         Deze functie bepaald hoevaak een substring voorkomt in de clusters
     '''
+    verwijderen += extra_verwijderen
     clusters = list(data.keys())                                            # maakt lijst van keys in cluster_discription
     descriptions = list(data.values())                                      # maakt lijst van values in cluster_discription
     lib_substrings = {}                                                     # maakt nieuwe lege dictionary
@@ -165,7 +176,7 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
     keys_to_delete_1 = []                                            # maakt lege lijst om keys te verwijderen    
 
     for key in lib_substrings:
-        if (lib_substrings[key] == "") | (len(key) < 3):
+        if (lib_substrings[key] == "") | (len(key) < lengt_ignored):
             keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
 
     for key in keys_to_delete_1:
@@ -173,7 +184,7 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
   
     return lib_substrings
 
-def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijderen):
+def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijderen, lengt_ignored, extra_verwijderen):
     '''
     preconditions: 
         - Filename_res = name of the file with the cluster results
@@ -188,9 +199,9 @@ def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijde
     lib_results = lib_res(Filename_res)
     lib_beschrijving = lib_beschrijvingen(Filename_bes)
     lib_cluster_info = get_cluster_description(lib_results, lib_beschrijving)
-    lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster, verwijderen)
+    lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster, verwijderen, lengt_ignored, extra_verwijderen)
     
-    return lib_substrings, lib_beschrijving
+    return lib_substrings
 
-lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 6,1, verwijderen)
+lib_substrings = fucntie_uitvoeren(Filename_res,Filename_bes,clusters,in_cluster, verwijderen, lengt_ignored, extra_verwijderen)
 print(lib_substrings)
