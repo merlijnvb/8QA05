@@ -74,6 +74,21 @@ def lib_beschrijvingen(Filename):
     # return lib_refrence
 
 def get_cluster_description(results, refrence_data):
+    '''
+    preconditions: 
+        - results --> library with results
+                                key   --> genID
+                                value --> cluster
+        - refrence_data --> library with descriptions:
+                                key   --> genID
+                                value --> description
+    
+    postconditions: 
+        - cluster_discription --> library
+                                key   --> cluster
+                                value --> list of descriptions of the 
+                                            genes that are in that cluster
+    '''
     cluster_discription = dict()                                                # maakt nieuwe dictionary aan
     
     for i in range(min(results.values()),max(results.values())+1):
