@@ -86,7 +86,7 @@ def get_cluster_description(results, refrence_data):
 
 verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs',
                       'like', 'acid-rich', 'adhesion', 'affinity', 'activity', 'alpha-like', 'anion', 'assembly',
-                      'association', 'basic', 'candidate', 'carbon', 'coenzyme', 'cofactor', 'coiled-coil',
+                      'association', 'basic', 'candidate', 'carbon','Coenzyme', 'cofactor', 'coiled-coil',
                       'coiled-coil-helix-coiled-coil-helix', 'cold', 'double', 'domain-containing', 'enabled',
                       'fast', 'four', 'glucose', 'half', 'hand', 'inner', 'insert', 'inorganic', 'isoenzyme',
                       'molecule', 'mouse', 'never', 'neighbor', 'nitrogen', 'omega', 'only', 'organic', 'outer', 'paired',
@@ -96,7 +96,7 @@ verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs
                       'chain', 'heavy', 'with', 'acid', 'alpha', 'beta', 'associated', 'containing', 'gamma',
                       'gene', 'inter', 'rich', 'type', 'repeat'] 
 
-def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
+def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
     '''
     preconditions: 
         - data --> library:
@@ -146,17 +146,28 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster):
                 substring_in_clusters[clust] = frequency
         if len(substring_in_clusters.keys()) == nr_of_clusters:
             lib_substrings[substring] = substring_in_clusters
-    keys_to_delete = []                                            # maakt lege lijst om keys te verwijderen
-    keys_to_delete = verwijderen
+    
+    keys_to_delete_1 = []                                            # maakt lege lijst om keys te verwijderen
+    keys_to_delete_2 = verwijderen
+    
+    
+
+    
     for key in lib_substrings:
-        if (lib_substrings[key] == "") | (len(key) < 3 | (key.lower() in keys_to_delete())):
-            keys_to_delete.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
-    for key in keys_to_delete:
-        lib_substrings.pop(key)                                   # verwijdert key
+        if (lib_substrings[key] == "") | (len(key) < 3):
+            keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
+
+    for key in keys_to_delete_1:
+        lib_substrings.pop(key)
+
+    for to_delete in keys_to_delete_2:
+        if to_delete in lib_substrings.keys():
+            lib_substrings.pop(to_delete)
+    
         
     return lib_substrings
 
-def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster):
+def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijderen):
     '''
     preconditions: 
         - Filename_res = name of the file with the cluster results
@@ -171,9 +182,9 @@ def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster):
     lib_results = lib_res(Filename_res)
     lib_beschrijving = lib_beschrijvingen(Filename_bes)
     lib_cluster_info = get_cluster_description(lib_results, lib_beschrijving)
-    lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster)
+    lib_substrings = telwoorden(lib_cluster_info, clusters, in_cluster, verwijderen)
     
     return lib_substrings, lib_beschrijving
 
-lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 6,1)
+lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 1,1, verwijderen)
 print(lib_substrings)
