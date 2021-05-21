@@ -131,7 +131,7 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
             desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden
             
             for bes in desc_to_check:
-                if len(bes) > 3:
+                if (len(bes) > 3) & (bes not in verwijderen):
                     substring = bes
                 lib_substrings[substring] = ''
             
@@ -147,24 +147,15 @@ def telwoorden(data, nr_of_clusters, nr_string_in_cluster, verwijderen):
         if len(substring_in_clusters.keys()) == nr_of_clusters:
             lib_substrings[substring] = substring_in_clusters
     
-    keys_to_delete_1 = []                                            # maakt lege lijst om keys te verwijderen
-    keys_to_delete_2 = verwijderen
-    
-    
+    keys_to_delete_1 = []                                            # maakt lege lijst om keys te verwijderen    
 
-    
     for key in lib_substrings:
         if (lib_substrings[key] == "") | (len(key) < 3):
             keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
 
     for key in keys_to_delete_1:
         lib_substrings.pop(key)
-
-    for to_delete in keys_to_delete_2:
-        if to_delete in lib_substrings.keys():
-            lib_substrings.pop(to_delete)
-    
-        
+  
     return lib_substrings
 
 def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijderen):
@@ -186,5 +177,5 @@ def fucntie_uitvoeren(Filename_res, Filename_bes, clusters, in_cluster, verwijde
     
     return lib_substrings, lib_beschrijving
 
-lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 1,1, verwijderen)
+lib_substrings, lib_beschrijving = fucntie_uitvoeren('Voorbeeld_clusterresult.txt', 'GenDescription2.txt', 6,1, verwijderen)
 print(lib_substrings)
