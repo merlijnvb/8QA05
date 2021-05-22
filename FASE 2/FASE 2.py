@@ -382,7 +382,10 @@ class GCA:
                 else:    
                     cluster_group = self.group
                     for index in cluster_group:
-                        indexes.remove(int(index))
+                        try:
+                            indexes.remove(int(index))
+                        except:
+                            pass
                 
                 lib_cluster[clust_nr] = cluster_group
                 clust_nr += 1
@@ -405,7 +408,7 @@ kmca = KMCA()
 kmca.fit(lib_data)
 kmca_result, kmca_best_seed, kmca_e_score = kmca.optimize(10,30)
 
-gca = GCA(r=2, j=6)
+gca = GCA(r=1, j=5)
 gca_fit_data = gca.fit(lib_data)
 gca_results = gca.clustering(gca_fit_data)
 
@@ -415,18 +418,16 @@ gca_results = gca.clustering(gca_fit_data)
     
 """
 
-# --> needs to be aangepast nog een klein beetje in regel 424
-
 def return_txt_file(data, name, format_data=lib_data):
     lib_unfolded = dict()
     
     for cluster in data:
         if type(data[cluster]) == int:
             lib_unfolded[data[cluster]] = cluster
-        for ID in data[cluster]:
-            lib_unfolded[ID] = cluster
+        else:
+            for ID in data[cluster]:
+                lib_unfolded[ID] = cluster
     
-    #print(lib_unfolded)
     file = open(f'{name}results.txt', 'w')
     indexes_lost = list()
     
