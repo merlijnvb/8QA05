@@ -300,27 +300,33 @@ class GCA:
 
         def apply_grid(data):
             '''
-            preconditions:  - a library with that contains the data. the library must have tehe gene code as key and a list
+            preconditions:  - a library with that contains the data. the library must have the gene code as key and a list
                               of the datapoints as value. 
-                            - a library with the intervals
                             
             postconditions: returns a library: 
                                 keys   --> gene ID
                                 values --> unique cel ID
             this functions task: returning a library with gene ID as key and as value the unique cel ID.
             '''
+            
             grid = list()
             self.lib_cells = dict()
             
-            lib_cords = axis_data(data)
-            lib_interv = interval_data(lib_cords)
+            lib_cords = axis_data(data) # GET A DICTIONARY WITH ALL THE DATA PER AXIS
+            lib_interv = interval_data(lib_cords) # GET A DICTIONARY WITH ALL THE INTERVALS PER AXIS
             
-            for axis in lib_cords:
-                for subspace in range(1,len(lib_interv[axis])):
+            # GET FOR EVERY AXIS THE SUBCEL-ID
+            for axis in lib_cords: # LOOP OVER EVERY AXIS
+                for subspace in range(1,len(lib_interv[axis])): # LOOP OVER EVERY SUBSPACE (SPACE BETWEEN 2 INTERVALS)
+                    # CONDITIONS ARE APPLIED TO THE VALUES OF AN AXIS
+                    # --> CONDITIONS ARE THAT THE VALUES NEED TO BE BETWEEN 2 INTERVALS SET BY THE INTERVAL_DATA FUNCTION
+                    # --> LIB_CORDS => A LIST WITH AS VALUES THE SUBSPACE-ID 
                     lib_cords[axis][(lib_cords[axis] > lib_interv[axis][subspace-1]) & (lib_cords[axis] < lib_interv[axis][subspace])] = subspace
                 
+                # APPEND THE GRID LIST WITH THE CALCULATED SUBSPACE LISTS PER AXIS
                 grid.append(lib_cords[axis])
             
+            # CONVERT THE GRID LIST TO A DICTIONARY
             for i in range(len(self.indexes)):
                 self.lib_cells[self.indexes[i]] = list()
                 
@@ -360,26 +366,44 @@ class GCA:
             return neigb
     
         lib_cluster = dict()
+        
         def get_all_neigbours(ID,location):
+            '''
+            preconditions:  a cell ID + a location in the list of cell-neigbors
+            postconditions: updated location + updated group (all neigbors) list
+            this functions task: gathering all neigbors of a originated cell
+            '''
+            
             self.group += get_neigbours(ID)
             self.group = list(np.unique(self.group))
             
+            # UPDATE LOCATION
             location += 1
-                        
+            
+            # IF THE LOCATION IS GREATER THAN THE LIST OF ALL NEIGBOURS --> THE LIST OF NEIGBOURS HAS ALL ITS NEIGBOURS ASSIGNED TO IT
+            # IF THIS IS NOT YET THE CASE CALL THE SAME FUNCTION WITH THE UPDATED LOCATION
             if len(self.group) > location:
                 get_all_neigbours(self.group[location], location)
         
         def make_clusters(indexes, clust_nr=1):
+            '''
+            preconditions:  list of all indexes 
+            postconditions: updated list of indexes that are not been assigned to a neigbor group
+            this functions task: - calling the function get_all_neigbours efficiently so no duplicates are formed --> get_all_neigbours wont form duplicate neigbour groups
+                                 - returning a dictionary with every cluster as key and the corrisponding protein-IDs in a list as value  
+            '''
             if len(indexes) > 0:
                 indexes = indexes.copy()
                 
-                self.group = list()
-                get_all_neigbours(indexes[0], -1)
+                self.group = list() # FOR EVERY PROTEIN INDEX MAKE A NEW GROUP
+                get_all_neigbours(indexes[0], -1) # CALL THE FUNCTION GET ALL NEIGBOURS FOR THE FIRST INDEX IN THE LIST OF INDEXES, STARTING POINT == -1, BECAUSE -1 IS UPDATED BY 1 => STARTING POINT IS REALY 0
                 
                 if len(self.group) == 0:
+                    # IF ORIGINAL PROEIN INDEX HAS NO NEIGBOURS, THEN GIVE THE GROUP ONLY THE ONE PROTEIN-ID AND REMOVE THAT ONE ID FROM THE LIST OF INDEXES
                     cluster_group = indexes[0]
                     indexes.remove(cluster_group)
                 else:    
+                    # ELSE: GET EVERY INDEX IN THE GROUP LIST AND REMOVE IT FROM THE LIST OF INDEXES
                     cluster_group = self.group
                     for index in cluster_group:
                         try:
@@ -387,8 +411,11 @@ class GCA:
                         except:
                             pass
                 
+                # MAKE CLUSTER DICTIONARY
                 lib_cluster[clust_nr] = cluster_group
+                # UPDATE CLUSTER #NR BY 1 EVERY ITERATION
                 clust_nr += 1
+                # CALL THE SAME FUNCTION WITH THE UPDATED LIST OF INDEXES + THE UPDATED CLUSTER #NR
                 make_clusters(indexes, clust_nr)
                 
             return lib_cluster
