@@ -197,8 +197,7 @@ def Daysdict(Dagen,r_filter=0.5):
             if not ((Dagen[i][ID][Columns.index("P1Cov")] >= 40) and (Dagen[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
             if (Dagen[i][ID][Columns.index("Class")] == "B") or (Dagen[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
             if Dagen[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
-
-        
+                
     return New_Dagen, Filterinfo
 
     
@@ -256,7 +255,6 @@ def plot_phase1(Dagen,rDict,r_filter=0.5):
     line_plots(rDict,r_filter) # to plot the bar plots
     
 
-    
 def plot_dagen(Dagen,log=False,Norm=False):
     """Preconditions:  Dagen is een lijst van libraries, log en
                         norm zijn booleans die aangeven of de 
@@ -366,4 +364,5 @@ def main():
     dict_to_txt(rDict,outfile_name,"  ")           # make a file of filtered data for phase 2
     if input("Would you like the plots of phase 1? \n"): # ask whether the user would like to see the plots of phase 1 (boolean input)
         plot_phase1(Dagen,rDict,r_filter)               # plot everything there is to plot in phase 1 based on unfiltered data
+    
     return outfile_name
