@@ -34,6 +34,7 @@ class GCA:
         self.lib_axis = dict()
         self.lib_interval = dict()
         self.lib_cells = dict()
+        self.lib_grid = dict()
         
     def interval_data(self, data=dict()):
         if self.lib_data == dict():
@@ -55,20 +56,23 @@ class GCA:
             self.lib_interval[axis] = np.mgrid[minimum:maximum:complex(0,self.subspaces+1)]
         
     def grid_data(self):
-        for axis in self.lib_interval: # LOOP OVER EVERY AXIS
-            for interval in range(1,len(self.lib_interval[axis])): # LOOP OVER EVERY SUBSPACE (SPACE BETWEEN 2 INTERVALS)
-                # CONDITIONS ARE APPLIED TO THE VALUES OF AN AXIS
-                # --> CONDITIONS ARE THAT THE VALUES NEED TO BE BETWEEN 2 INTERVALS SET BY THE INTERVAL_DATA FUNCTION
-                # --> LIB_CORDS => A LIST WITH AS VALUES THE SUBSPACE-ID 
-                self.lib_axis[axis][(self.lib_axis[axis] >= self.lib_interval[axis][interval-1]) & (self.lib_axis[axis] <= self.lib_interval[axis][interval]) & (type(self.lib_axis[axis]) != str)] = str(interval)
+        grid = dict()
+        
+        for axis in self.lib_interval:
+            lib_axis_subspace = self.lib_axis[axis].copy()
             
-            # APPEND THE GRID LIST WITH THE CALCULATED SUBSPACE LISTS PER AXIS
-            print( in self.lib_axis[axis])
-            #grid.append(self.lib_axis[axis])
+            for interval in range(1,len(self.lib_interval[axis])):                
+                lib_axis_subspace[(self.lib_axis[axis] >= self.lib_interval[axis][interval-1]) & (self.lib_axis[axis] <= self.lib_interval[axis][interval])] = interval
+                         
                 
-        #for i in  self.lib_axis:
-             #for j in self.lib_axis[i]:
-                 #print(type(j))
+            grid[axis] = lib_axis_subspace.astype(int)
+            
+        for i in range(len(self.lib_data)):
+            index = list(self.lib_data.keys())[i]
+            self.lib_grid[index] = np.zeros((len(self.lib_interval),),dtype=int)
+            
+            for axis in grid:
+                self.lib_grid[index][axis] = grid[axis][i]            
         
 
 
