@@ -26,24 +26,24 @@ def file_to_lib(FileName):
     return lib
 
 class GCA:
-    def __init__(self, scope=1, subspaces=9, tresh=3, data=dict()):
+    def __init__(self, scope=1, subspaces=9, tresh=3, data={}):
         self.scope = scope
         self.subspaces = subspaces 
         self.tresh = tresh 
         self.lib_data = data
-        self.lib_axis = dict()
-        self.lib_interval = dict()
-        self.lib_cells = dict()
-        self.lib_grid = dict()
+        self.lib_axis = {}
+        self.lib_interval = {}
+        self.lib_cells = {}
+        self.lib_grid = {}
         
-    def interval_data(self, data=dict()):
-        if self.lib_data == dict():
+    def interval_data(self, data={}):
+        if self.lib_data == {}:
             self.lib_data = data
         
         
         
         for axis in range(len(list(self.lib_data.values())[0])): 
-            x = list()
+            x = []
             for index in self.lib_data: 
                 x.append(float(self.lib_data[index][axis]))  
         
@@ -56,7 +56,7 @@ class GCA:
             self.lib_interval[axis] = np.mgrid[minimum:maximum:complex(0,self.subspaces+1)]
         
     def grid_data(self):
-        grid = dict()
+        grid = {}
         
         for axis in self.lib_interval:
             lib_axis_subspace = self.lib_axis[axis].copy()
