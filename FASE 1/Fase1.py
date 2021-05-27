@@ -83,7 +83,7 @@ def normSig2_add(Dagen):
         S1 = summation(Dag,"P1Sig") # optellen van alle P1Sig waardes
         S2 = summation(Dag,"P2Sig") # optellen van alle P2Sig waardes
         for key in Dag:
-            Dag[key].append(int(Dag[key][3])*S1/S2)
+            Dag[key].append(int(Dag[key][Columns.index("P2Sig")])*S1/S2)
 
 
 def summation(Dag_dict,column_head):
@@ -106,9 +106,9 @@ def Log_add(Dagen):
                         deze toe aan elke dictionary in Dagen."""
     for Dag_dict in Dagen:
         for key in Dag_dict:
-            Dag_dict[key].append(math.log10(Dag_dict[key][0]))
-            Dag_dict[key].append(math.log10(Dag_dict[key][3]))
-            Dag_dict[key].append(math.log10(Dag_dict[key][6]))
+            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P1Sig")]))
+            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P2Sig")]))
+            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P2SigNorm")]))
 
               
 def Classes(Dagen,frequences=False):
@@ -140,15 +140,15 @@ def make_class(Dag,stb_threshold=25):
     counts = [0,0,0,0] # list of counters
     
     for ID in Dag:
-        if (Dag[ID][1] >= stb_threshold):
-            if (Dag[ID][4] >= stb_threshold):
+        if (Dag[ID][Columns.index("P1STB")] >= stb_threshold):
+            if (Dag[ID][Columns.index("P2STB")] >= stb_threshold):
                 Dag[ID].append("A")
                 counts[0]+=1
             else:
                 Dag[ID].append("B")
                 counts[1]+=1
         else:
-            if (Dag[ID][4] >= stb_threshold):
+            if (Dag[ID][Columns.index("P2STB")] >= stb_threshold):
                 Dag[ID].append("C")
                 counts[2]+=1
             else:
@@ -165,10 +165,10 @@ def add_expression(Dagen):
     Columns.append("RelativeExpression")
     for Dag in Dagen:
         for ID in Dag:
-            if (Dag[ID][0]/Dag[ID][6]) >= 1:
-                r = (Dag[ID][0]/Dag[ID][6]) - 1
+            if (Dag[ID][Columns.index("P1Sig")]/Dag[ID][Columns.index("P2SigNorm")]) >= 1:
+                r = (Dag[ID][Columns.index("P1Sig")]/Dag[ID][Columns.index("P2SigNorm")]) - 1
             else:
-                r = (-Dag[ID][6]/Dag[ID][0]) + 1
+                r = (-Dag[ID][Columns.index("P2SigNorm")]/Dag[ID][Columns.index("P1Sig")]) + 1
             Dag[ID].append(r)
 
 
@@ -192,11 +192,11 @@ def Daysdict(Dagen,r_filter=0.5):
         Filterinfo[ID] = [0,0,0,0]
         
         for i in range(len(Day_numbers)):
-            New_Dagen[ID].append(Dagen[i][ID][-1]) 
+            New_Dagen[ID].append(Dagen[i][ID][-1]) # de laatste positie van de lijst kan worden gebruikt, omdat r altijd achteraan moet staan
             if -r_filter < Dagen[i][ID][-1] < r_filter: Filterinfo[ID][3] += 1 # telt hoe vaak |r| kleiner is dan de filterwaarde
-            if not ((Dagen[i][ID][2] >= 40) and (Dagen[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
-            if (Dagen[i][ID][10] == "B") or (Dagen[i][ID][10] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
-            if Dagen[i][ID][10] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
+            if not ((Dagen[i][ID][Columns.index("P1Cov")] >= 40) and (Dagen[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
+            if (Dagen[i][ID][Columns.index("Class")] == "B") or (Dagen[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
+            if Dagen[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
 
         
     return New_Dagen, Filterinfo
@@ -332,7 +332,7 @@ def line_plots(rDict,r_filter,movement=256):
                         de progressie van dagen en op elke y-as de expressie-
                         waarde R. Plot tevens een lijn op y=r en y=-r om aan te 
                         geven waar de filtergrens zal liggen"""
-    ncols = 6
+    ncols = int(float(input("How many lineplots would you like? \n"))**0.5)
     # ncols = math.ceil(len(rDict)**0.5) # to plot all points (not recommended)
     nrows = ncols
     fig, ax = plt.subplots(ncols,nrows,figsize=(40,40),squeeze=False,sharex=True,sharey=True)
