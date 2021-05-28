@@ -326,6 +326,8 @@ def return_txt_file(data, name, format_data=lib_data):
             indexes_lost.append(INDEX)
     
     file.close()
-    print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
+    
+    if len(indexes_lost) > 0:
+        print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
     
 return_txt_file(kmca_results, 'kmca_')
