@@ -172,23 +172,34 @@ class GCA:
         '''
         
         summation = 0
-        lib_centroids = {}
+        lib_centroid = {}
         
         ## HIER VERDER WERKEN
         for k in self.lib_clustered:
             if k >= 0:
+                cordinate = []
                 for axis in self.lib_axis:
-                    print([index for index in self.lib_axis[axis] if index in self.lib_clustered[k]])
-
-        # for k in range(self.k): # CALCULATE FOR EVERY CLUSTER THE E_SCORE
-        #     summation += np.sum([np.square(abs(np.subtract(self.lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
+                    mean_x = 0
+                    
+                    for protein in [value for index, value in self.lib_data.items() if index in self.lib_clustered[k]]:
+                        mean_x += protein[axis]
+                    
+                    cordinate.append(mean_x / len(self.lib_clustered[k]))
+                    lib_centroid[k] = cordinate
+        
+        for k in lib_centroid: # CALCULATE FOR EVERY CLUSTER THE E_SCORE
+            summation += np.sum([np.square(abs(np.subtract(lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
             
-        # # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE K-MEANS FIT
-        # E_score = summation / self.k
+        # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE K-MEANS FIT
+        E_score = summation / len(lib_centroid)
         
-        # return E_score
+        return E_score
         
-    
+    def optimize(self):
+        """
+        WRITE CODE TO OPTIMIZE THE CLUSTER ALGORITHMS PARAMETER --> TO GET THE LOWEST POSSIBLE ESCORE AND THE HIGHEST POSSIBLE SILHOUETTE SCORE
+        """
+        pass
 
 lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
