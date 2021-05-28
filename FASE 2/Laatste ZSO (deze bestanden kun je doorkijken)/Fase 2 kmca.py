@@ -40,7 +40,7 @@ def file_to_lib(FileName):
 
 
 class KMCA:
-    def __init__(self, k=6, seed=2, data=dict(), normalize=True):
+    def __init__(self, k=6, seed=2, data={}, normalize=True):
         '''
         Preconditions:  k (#nr of clusters), seed (#nr linked to the randomness), data (dictionary)
         Postconditions: save every datafield with the corresponding values:
@@ -56,9 +56,10 @@ class KMCA:
         self.k = k
         self.seed = seed
         self.lib_data = data
-        self.lib_clustered = dict()
-        self.lib_centroid = dict()
+        self.lib_clustered = {}
+        self.lib_centroid = {}
         self.E_score = float('inf')
+        self.Sil_score = 0
         self.bool_normalized = False
         self.bool_want_normalized = normalize
     
@@ -90,13 +91,13 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == dict(): # CHECKING IF LIB_DATA IS EMPTY
+        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
         
         np.random.seed(self.seed)
         
         labels = np.random.randint(0,self.k,len(self.lib_data))
-        lib_labeled = dict()
+        lib_labeled = {}
         
         for i in range(len(self.lib_data)):
             lib_labeled[list(self.lib_data.keys())[i]] = labels[i]
@@ -117,11 +118,11 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == dict(): # CHECKING IF LIB_DATA IS EMPTY
+        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
             raise ImportError("No input given. --> clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_clustered == dict(): # CHECKING IF LIB_CLUSTERED IS EMPTY
+            if self.lib_clustered == {}: # CHECKING IF LIB_CLUSTERED IS EMPTY
                 raise ImportError("No input given and no lib_clustered known. --> call function clustering(data) or __init__(data) or normalize(data) and call function cluster0()")
-        if (self.lib_clustered == dict()) & (self.lib_data != dict()): # CHECKING IF LIB_CLUSTERED IS EMPTY BUT LIB_DATA IS GIVEN
+        if (self.lib_clustered == {}) & (self.lib_data != {}): # CHECKING IF LIB_CLUSTERED IS EMPTY BUT LIB_DATA IS GIVEN
             raise ImportError("No lib_clustered known. --> call function cluster0()")
             
         for k in self.lib_clustered: # CALCULATE FOR EVERY CLUSTER THE MEAN CORDINATE (=CENTROID)
@@ -138,11 +139,11 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == dict(): # CHECKING IF LIB_DATA IS EMPTY
+        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_centroid == dict(): # CHECKING IF LIB_CENTROID IS EMPTY
+            if self.lib_centroid == {}: # CHECKING IF LIB_CENTROID IS EMPTY
                 raise ImportError("No input given and no lib_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
-        if (self.lib_centroid == dict()) & (self.lib_data != dict()): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
+        if (self.lib_centroid == {}) & (self.lib_data != {}): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
             raise ImportError("No lib_centroid known. --> call function centroid()")
             
         summation = 0
@@ -165,11 +166,11 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == dict(): # CHECKING IF LIB_DATA IS EMPTY
+        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_centroid == dict(): # CHECKING IF LIB_CENTROIDS IS EMPTY
+            if self.lib_centroid == {}: # CHECKING IF LIB_CENTROIDS IS EMPTY
                 raise ImportError("No input given and no lib_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
-        if (self.lib_centroid == dict()) & (self.lib_data != dict()): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
+        if (self.lib_centroid == {}) & (self.lib_data != {}): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
             raise ImportError("No lib_centroid known. --> call function centroid()")
         
         self.lib_clustered = {k:[] for k in range(self.k)} # EMPTY THE CLUSTERED LIBRARY
@@ -184,7 +185,7 @@ class KMCA:
     
     
     
-    def clustering(self, data=dict()):
+    def clustering(self, data={}):
         '''
         Postconditions: A dictionary:
                         --> Key = Cluster #nr
@@ -193,8 +194,8 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == dict(): # CHECKING IF LIB_DATA IS EMPTY
-            if data == dict(): # CHECKING IF DATA IS EMPTY
+        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
+            if data == {}: # CHECKING IF DATA IS EMPTY
                 raise ImportError("No input given. --> clustering(data) or __init__(data) or normalize(data)")
             else:
                 if self.bool_want_normalized: # CHECKING IF USER WANTS TO NORMALIZE
@@ -248,13 +249,49 @@ class KMCA:
         self.seed = best_seed
         
         return self.lib_clustered
+    
+    
+    def silhouette_score(self):
+        '''
+        Postconditions: silhouette_score => score how good the k-means clustering fit is
+        Task of function: calculating a score using a better scoring system with more indicative score values:
+            --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched to its neighbouring cluster.
+            
+            --> Therefor if silhouette_score is closer to -1     ==>     datapoint would be better assigned to another cluster
+            --> Therefor if silhouette_score is closer to  1     ==>     datapoint is appropriatly assigned to cluster
+            --> If silhouette_score is close to 0     ==>     datapoint is on the border of two clusters.
+        '''
+        list_scores = []
+        
+        for index in self.lib_data:
+            cluster_nr = [cluster for cluster, indexes in self.lib_clustered.items() if index in indexes][0] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            
+            if len(self.lib_clustered[cluster_nr]) > 1:
+                # CALCULATE THE MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS IN ITS CLUSTER (INTERNAL):
+                dissimilarity_internal = np.sum([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data]) / (len(self.lib_data)-1)
+                
+                # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
+                # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
+                dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data if index_in in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
+                
+                # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
+                sil_score_i = (external_dissimilarity - internal_dissimilarity) / max(internal_dissimilarity,external_dissimilarity)
+                
+            if len(self.lib_clustered[cluster_nr]) == 1:
+                sil_score_i = 0
+            
+            list_scores.append(sil_score_i)
+            
+        self.Sil_score = np.mean(list_scores)
+        
+        return self.Sil_score        
+                            
+                            
+            
         
 lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
     
 kmca = KMCA(data=lib_data)
-#kmca.normalize(lib_data)
-#res = kmca.clustering(lib_data)
 best_res = kmca.optimize()
-
-print(best_res, "Best seed:" ,kmca.seed)
+Sil_score = kmca.silhouette_score()
