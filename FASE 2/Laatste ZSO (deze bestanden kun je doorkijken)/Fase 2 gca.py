@@ -37,6 +37,8 @@ class GCA:
         self.lib_grid = {}
         self.lib_clustered = {}
         self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
+        self.E_score = 0
+        self.Sil_score = 0
         
     def interval_data(self, data={}):
         if self.lib_data == {}:
@@ -103,7 +105,10 @@ class GCA:
                 self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
         if (self.indexes_not_clusterd.size <= 1) & (self.lib_data != {}):
             self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
-            
+         
+        self.interval_data()
+        self.grid_data()
+        
         cluster_nr = 0
         anticluster_nr = 0
         lib_anticlustered = {}
@@ -120,7 +125,7 @@ class GCA:
                     lib_anticlustered[anticluster_nr] = cluster
                     anticluster_nr += 1
                     
-        self.lib_clustered[-1] = lib_anticlustered     
+        self.lib_clustered[-1] = lib_anticlustered
         
         return self.lib_clustered
     
@@ -191,23 +196,32 @@ class GCA:
             summation += np.sum([np.square(abs(np.subtract(lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
             
         # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE K-MEANS FIT
-        E_score = summation / len(lib_centroid)
+        self.E_score = summation / len(lib_centroid)
         
-        return E_score
+        return self.E_score
         
-    def optimize(self):
-        """
-        WRITE CODE TO OPTIMIZE THE CLUSTER ALGORITHMS PARAMETER --> TO GET THE LOWEST POSSIBLE ESCORE AND THE HIGHEST POSSIBLE SILHOUETTE SCORE
-        """
-        pass
+    def optimize(self, subspace_min=10, subspace_max=40):
+        Sil_score_best = -2 # SET E_SCORE TO INFINITY SO THE 0TH ITERATION HAS THE LEAST FAVORABLE SCORE
+        
+        for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SEEDS THAT IS GIVEN
+            self.subspaces = subspace
+            self.clustering()
+            self.silhouette_score()
+            
+            if self.Sil_score > Sil_score_best: # CHECK IF THE GIVEN SEED HAS A BETTER FIT THAN THE LAST BEST ONE, IFSO SAVE IT
+                Sil_score_best = self.Sil_score
+                best_subsapce = subspace
+                
+        self.subspaces = best_subsapce 
+        self.clustering()
+        self.E_score()
+        self.silhouette_score()
+        
+        return self.lib_clustered
 
 lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
    
-gca = GCA()
-gca.interval_data(lib_data)
-gca.grid_data()
-results = gca.clustering()
-for i in results:
-    print(len(results[i]))
-print(gca.Escore())
+gca = GCA(data=lib_data)
+results = gca.optimize()
+print(gca.Sil_score)
