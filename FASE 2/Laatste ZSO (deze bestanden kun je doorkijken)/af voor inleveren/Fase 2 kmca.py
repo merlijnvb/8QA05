@@ -62,6 +62,7 @@ class KMCA:
         self.Sil_score = 0
         self.bool_normalized = False
         self.bool_want_normalized = normalize
+        self.lib_silscores = {}
     
     def normalize(self, data_unnorm):
         '''
@@ -250,6 +251,24 @@ class KMCA:
         
         return self.lib_clustered
     
+    def optimize_sil(self, min_seed=0, max_seed=30):
+        self.lib_silscores = {}
+        
+        for seed in range(min_seed, max_seed+1): # LOOP OVER THE RANGE OF SEEDS THAT IS GIVEN
+            self.seed = seed
+            self.clustering()
+            
+            try: 
+                self.silhouette_score()
+                self.lib_silscores[seed] = self.Sil_score
+            except: 
+                self.lib_silscores[seed] = -2
+                
+            print(f'{((seed-min_seed)/(max_seed-min_seed))*100}%', end='\r')
+               
+        self.seed =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
+        self.clustering()
+        self.silhouette_score()
     
     def silhouette_score(self):
         '''
@@ -272,7 +291,7 @@ class KMCA:
                 
                 # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
                 # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
-                dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data if index_in in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
+                dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_ex]) for index_ex in self.lib_data if index_ex in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
                 
                 # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
                 sil_score_i = (dissimilarity_external - dissimilarity_internal) / max(dissimilarity_external,dissimilarity_internal)
@@ -293,9 +312,8 @@ lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
     
 kmca = KMCA(data=lib_data)
-kmca_results = kmca.optimize()
-kmca_score = kmca.silhouette_score()
-print(kmca_score)
+kmca_results = kmca.optimize_sil()
+kmca_scores = kmca.lib_silscores
 
 
 """
@@ -307,27 +325,39 @@ print(kmca_score)
 
 def return_txt_file(data, name, format_data=lib_data):
     lib_unfolded = dict()
+    score = False
     
     for cluster in data:
         if type(data[cluster]) == int:
             lib_unfolded[data[cluster]] = cluster
         else:
-            for ID in data[cluster]:
-                lib_unfolded[ID] = cluster
+            try:
+                for ID in data[cluster]:
+                    lib_unfolded[ID] = cluster
+            except:
+                score = True
+                break
     
     file = open(f'{name}results.txt', 'w')
     indexes_lost = list()
     
-    for INDEX in format_data:
-        try:
-            line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+    if score == False:
+        for INDEX in format_data:
+            try:
+                line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+                file.write(line)
+            except:
+                indexes_lost.append(INDEX)
+    else:
+        for subspace in data:
+            line = str(subspace) + " " + str(data[subspace]) + "\n"            
             file.write(line)
-        except:
-            indexes_lost.append(INDEX)
-    
+            
     file.close()
     
     if len(indexes_lost) > 0:
         print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
     
-return_txt_file(kmca_results, 'kmca_')
+#return_txt_file(kmca_results, 'kmca_')
+return_txt_file(kmca_scores, 'kmca_sil_')
+
