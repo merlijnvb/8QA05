@@ -39,6 +39,7 @@ class GCA:
         self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
         self.E_score = 0
         self.Sil_score = 0
+        self.lib_silscores = {}
         
     def interval_data(self, data={}):
         if self.lib_data == {}:
@@ -200,21 +201,31 @@ class GCA:
         
         return self.E_score
         
-    def optimize(self, subspace_min=10, subspace_max=40):
-        Sil_score_best = -2 # SET E_SCORE TO INFINITY SO THE 0TH ITERATION HAS THE LEAST FAVORABLE SCORE
+    def optimize(self, subspace_min=10, subspace_max=20):
+        '''
+        Postconditions: A dictionary:
+                        --> Key = Cluster #nr
+                        --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum and when the starting centroids are at its best
+        Task of function: calculating which seed gives the best results --> returning the clustered proteins for which the E_score is at its highest when comparing different starting centroids
+        '''
+        
+        self.lib_silscores = {}
         
         for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SEEDS THAT IS GIVEN
             self.subspaces = subspace
             self.clustering()
-            self.silhouette_score()
             
-            if self.Sil_score > Sil_score_best: # CHECK IF THE GIVEN SEED HAS A BETTER FIT THAN THE LAST BEST ONE, IFSO SAVE IT
-                Sil_score_best = self.Sil_score
-                best_subsapce = subspace
+            try: 
+                self.silhouette_score()
+                self.lib_silscores[subspace] = self.Sil_score
+            except: 
+                self.lib_silscores[subspace] = -2
                 
-        self.subspaces = best_subsapce 
+            print(f'{((subspace-subspace_min)/(subspace_max-subspace_min))*100}%', end='\r')
+               
+        self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
         self.clustering()
-        self.E_score()
+        self.Escore()
         self.silhouette_score()
         
         return self.lib_clustered
@@ -223,5 +234,44 @@ lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
    
 gca = GCA(data=lib_data)
-results = gca.optimize()
-print(gca.Sil_score)
+gca_results = gca.optimize(10,50)
+gca_scores = gca.lib_silscores
+
+def return_txt_file(data, name, format_data=lib_data):
+    lib_unfolded = dict()
+    score = False
+    
+    for cluster in data:
+        if type(data[cluster]) == int:
+            lib_unfolded[data[cluster]] = cluster
+        else:
+            try:
+                for ID in data[cluster]:
+                    lib_unfolded[ID] = cluster
+            except:
+                score = True
+                break
+    
+    file = open(f'{name}results.txt', 'w')
+    indexes_lost = list()
+    
+    if score == False:
+        for INDEX in format_data:
+            try:
+                line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+                file.write(line)
+            except:
+                indexes_lost.append(INDEX)
+    else:
+        for subspace in data:
+            line = str(subspace) + " " + str(data[subspace]) + "\n"            
+            file.write(line)
+            
+    file.close()
+    
+    if len(indexes_lost) > 0:
+        print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
+    
+#return_txt_file(gca_results, 'gca_')
+return_txt_file(gca_scores, 'gca_sil_')
+
