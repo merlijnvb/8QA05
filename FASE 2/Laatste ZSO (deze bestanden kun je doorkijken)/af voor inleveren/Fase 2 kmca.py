@@ -46,23 +46,29 @@ class KMCA:
         Postconditions: save every datafield with the corresponding values:
                         --> self.k = #nr of clusters (k) .
                         --> self.seed = seed.
+                        --> self.bool_normalized = boolean to check if the data is already normalized.
+                        --> self.bool_want_normalized = boolean to check if user wants to normilize.
                         --> self.lib_[...] = empty dictionary that is filled later.
                             --> lib_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
                         --> self.E_score = set to infinity, because if we don't cluster the data in the first iteration the E_score is not representative.
-                        --> self.bool_normalized = boolean to check if the data is already normalized.
-                        --> self.bool_want_normalized = boolean to check if user wants to normilize.
+                        --> self.Sil_score = set to 0, because if we don't cluster the data in the first iteration the Sil_score is not representative.
+                        --> self.lib_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
+                        --> self.lib_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.    
         '''
         
         self.k = k
         self.seed = seed
+        self.bool_normalized = False
+        self.bool_want_normalized = normalize
         self.lib_data = data
         self.lib_clustered = {}
         self.lib_centroid = {}
         self.E_score = float('inf')
-        self.Sil_score = 0
-        self.bool_normalized = False
-        self.bool_want_normalized = normalize
+        self.Sil_score = -2
+        self.lib_Escores = {}
         self.lib_silscores = {}
+
+    
     
     def normalize(self, data_unnorm):
         '''
@@ -158,6 +164,46 @@ class KMCA:
         return E_score
     
     
+    
+    
+    def silhouette_score(self):
+        '''
+        Postconditions: silhouette_score => score how good the k-means clustering fit is
+        Task of function: calculating a score using a better scoring system with more indicative score values:
+            --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched to its neighbouring cluster.
+            
+            --> Therefor if silhouette_score is closer to -1     ==>     datapoint would be better assigned to another cluster
+            --> Therefor if silhouette_score is closer to  1     ==>     datapoint is appropriatly assigned to cluster
+            --> If silhouette_score is close to 0     ==>     datapoint is on the border of two clusters.
+        '''
+        list_scores = []
+        
+        for index in self.lib_data:
+            # GET THE CLUSTER #NR WHICH THE PROTEIN IS ASSIGNED TO
+            cluster_nr = [cluster for cluster, indexes in self.lib_clustered.items() if index in indexes][0] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            
+            if len(self.lib_clustered[cluster_nr]) > 1:
+                # CALCULATE THE MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS IN ITS CLUSTER (INTERNAL):
+                dissimilarity_internal = np.sum([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data]) / (len(self.lib_data)-1)
+                
+                # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
+                # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
+                dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_ex]) for index_ex in self.lib_data if index_ex in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
+                
+                # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
+                sil_score_i = (dissimilarity_external - dissimilarity_internal) / max(dissimilarity_external,dissimilarity_internal)
+                
+            if len(self.lib_clustered[cluster_nr]) == 1:
+                sil_score_i = 0
+            
+            list_scores.append(sil_score_i)
+            
+        self.Sil_score = np.mean(list_scores)
+        
+        return self.Sil_score      
+    
+    
+    
     def assign_cluster(self):
         '''
         Postconditions: A dictionary:
@@ -189,7 +235,7 @@ class KMCA:
     def clustering(self, data={}):
         '''
         Postconditions: A dictionary:
-                        --> Key = Cluster #nr
+                        --> Key = cluster #nr
                         --> Value = list of protein ID's that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
         Task of function: assigning proteins to the best cluster by updating the centroids a few iterations until the E_score is in its maximum
         '''
@@ -226,94 +272,71 @@ class KMCA:
         
     
     
-    def optimize(self, min_seed=0, max_seed=30):
+    def optimize_e(self, min_seed=0, max_seed=30):
         '''
-        Postconditions: A dictionary:
+        Preconditions: range in which parameter seeds can be varied
+        Postconditions: a dictionary:
                         --> Key = Cluster #nr
-                        --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum and when the starting centroids are at its best
+                        --> Value = list of protein IDs that are assigned to that cluster when the E_score (the accuracy of the cluster) is in its maximum and when the starting centroids are at its best
+                        a dictionary:
+                        --> Key = seed
+                        --> Value = E_score
         Task of function: calculating which seed gives the best results --> returning the clustered proteins for which the E_score is at its highest when comparing different starting centroids
         '''
-        
-        E_score_old = float('inf') # SET E_SCORE TO INFINITY SO THE 0TH ITERATION HAS THE LEAST FAVORABLE SCORE
         
         for seed in range(min_seed, max_seed+1): # LOOP OVER THE RANGE OF SEEDS THAT IS GIVEN
             self.seed = seed
             self.clustering()
-            
-            if self.E_score < E_score_old: # CHECK IF THE GIVEN SEED HAS A BETTER FIT THAN THE LAST BEST ONE, IFSO SAVE IT
-                lib_best_clustered = self.lib_clustered
-                best_seed = self.seed
-                E_score_old = self.E_score
+            self.lib_Escores[seed] = self.E_score
         
-        # SAVE THE BEST RESULTS IN THE DATAFRAMES
-        self.lib_clustered = lib_best_clustered
-        self.seed = best_seed
+            print(f'{((seed-min_seed)/(max_seed-min_seed))*100}%', end='\r') # PRINT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
+
+        
+        self.seed = list(self.lib_Escores.keys())[np.argmax(list(self.lib_Escores.values()))]
+        self.clustering()
         
         return self.lib_clustered
     
     def optimize_sil(self, min_seed=0, max_seed=30):
+        '''
+        Preconditions: range in which parameter seeds can be varied
+        Postconditions: a dictionary:
+                        --> Key = Cluster #nr
+                        --> Value = list of protein IDs that are assigned to that cluster when the Sil_score (the accuracy of the cluster) is in its maximum and when the starting centroids are at its best
+                        a dictionary:
+                        --> Key = seed
+                        --> Value = Sil_score
+        Task of function: calculating which seed gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different starting centroids
+        '''
+        
         self.lib_silscores = {}
         
         for seed in range(min_seed, max_seed+1): # LOOP OVER THE RANGE OF SEEDS THAT IS GIVEN
             self.seed = seed
             self.clustering()
             
-            try: 
+            try: # CALCULATE THE SILHOUETTE SCORE AND SAVE IT
                 self.silhouette_score()
                 self.lib_silscores[seed] = self.Sil_score
-            except: 
+            except: # WHEN GIVEN NaN (WHEN NOT ALL CLUSTERS ARE FILLED OR ONLY 1 CLUSTER EXISTS) RETURN A VALUE THAT IS OUT OF THE SILHOUETTE RANGE
                 self.lib_silscores[seed] = -2
                 
-            print(f'{((seed-min_seed)/(max_seed-min_seed))*100}%', end='\r')
+            print(f'{((seed-min_seed)/(max_seed-min_seed))*100}%', end='\r') # PRINT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
                
         self.seed =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
         self.clustering()
         self.silhouette_score()
-    
-    def silhouette_score(self):
-        '''
-        Postconditions: silhouette_score => score how good the k-means clustering fit is
-        Task of function: calculating a score using a better scoring system with more indicative score values:
-            --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched to its neighbouring cluster.
-            
-            --> Therefor if silhouette_score is closer to -1     ==>     datapoint would be better assigned to another cluster
-            --> Therefor if silhouette_score is closer to  1     ==>     datapoint is appropriatly assigned to cluster
-            --> If silhouette_score is close to 0     ==>     datapoint is on the border of two clusters.
-        '''
-        list_scores = []
         
-        for index in self.lib_data:
-            cluster_nr = [cluster for cluster, indexes in self.lib_clustered.items() if index in indexes][0] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
-            
-            if len(self.lib_clustered[cluster_nr]) > 1:
-                # CALCULATE THE MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS IN ITS CLUSTER (INTERNAL):
-                dissimilarity_internal = np.sum([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data]) / (len(self.lib_data)-1)
-                
-                # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
-                # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
-                dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_ex]) for index_ex in self.lib_data if index_ex in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
-                
-                # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
-                sil_score_i = (dissimilarity_external - dissimilarity_internal) / max(dissimilarity_external,dissimilarity_internal)
-                
-            if len(self.lib_clustered[cluster_nr]) == 1:
-                sil_score_i = 0
-            
-            list_scores.append(sil_score_i)
-            
-        self.Sil_score = np.mean(list_scores)
-        
-        return self.Sil_score        
-                            
-                            
-            
-        
+        return self.lib_clustered
+
+
 lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
-    
+   
 kmca = KMCA(data=lib_data)
-kmca_results = kmca.optimize_sil()
-kmca_scores = kmca.lib_silscores
+kmca_results = kmca.optimize_sil(0,20)
+print(kmca.lib_silscores, kmca.)
+#kmca_scores = kmca.lib_silscores
 
 
 """
@@ -359,5 +382,5 @@ def return_txt_file(data, name, format_data=lib_data):
         print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
     
 #return_txt_file(kmca_results, 'kmca_')
-return_txt_file(kmca_scores, 'kmca_sil_')
+#return_txt_file(kmca_scores, 'kmca_sil_')
 
