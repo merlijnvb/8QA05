@@ -71,6 +71,8 @@ for cluster in np.unique(list(lib_clust.values())):
     for ID in IDs_in_cluster:
         if ID in ID_code:
             relevant_IDs_code[ID] = ID_code[ID]
+            
+            
     for ID_code in (relevant_IDs_code.values()):      
         Entrez.email = 'd.devetzis@student.tue.nl'
         handle = Entrez.efetch(db = 'gene', id=ID_code, retmode = 'asn.1')
@@ -113,8 +115,6 @@ for cluster in np.unique(list(lib_clust.values())):
     
     try:
         df = pd.DataFrame(amount_dict, index=list(amount_dict.keys())).head(1).transpose()
-        print('df van cluster ', cluster) 
-        print(df)
         if len(list(df)) > 0:    
             df_to_use = df[df[list(df)[0]] > 5].copy()
             if len(list(df.index.values)) > 0:
@@ -126,11 +126,4 @@ for cluster in np.unique(list(lib_clust.values())):
                     pass
     except:
         pass
-    
-    # if len(list(df)) > 0:    
-    #     df_to_use = df[df[list(df)[0]] > 5].copy()
-    #     try:
-    #         print(df_to_use)
-    #         df_to_use.plot(kind='bar', legend=False)
-    #     except:
-    #         pass
+
