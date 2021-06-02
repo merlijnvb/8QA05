@@ -281,7 +281,7 @@ def plot_dagen(Dagen,log=False,Norm=False):
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
     fig.suptitle("Visualisatie data"+add_on,size=24,weight='bold')
     for i in range(len(Dagen)):
-        ax_dag = ax[i%2,i//2]
+        ax_dag = ax[i%2,i//2] # in order to have the representation of the plots be plotted in 2 lines
         ax_dag.set_title("Dag "+str(Day_numbers[i]))
         df_dag = pd.DataFrame.from_dict(Dagen[i]).transpose() # making a dataframe of rDict for more efficiency in plotting
         df_dag.columns = Columns
