@@ -1,7 +1,6 @@
 import numpy as np
 
 """
-
    DEFINITION TO IMPORT TEXTFILES AND RETURN DICTIONARIES:
         
 """
@@ -33,44 +32,43 @@ def file_to_lib(FileName):
 
 
 """
-
    GRID BASED CLUSTERING:
         
 """
 
 
-class GCA:
+class GBCA:
     def __init__(self, scope=1, subspaces=9, thres=3, data={}):
         '''
-        Preconditions:  scope (range in which cells are labeled as neigbours), subspaces (#nr of subspaces there are for every axis), thres (threshold for the amount of data that a cluster needs to contain to be labeled as a cluster)
+        Preconditions:  scope: range in which cells are labeled as neigbours
+                        subspaces: #nr of subspaces there are for every axis
+                        thres: threshold for the amount of data that a cluster needs to contain to be labeled as a cluster
         Postconditions: save every datafield with the corresponding values:
                         --> self.scope = range of neigbours (scope).
                         --> self.subspaces = #nr of subpaces (subspaces).
                         --> self.thres = #nr of datapoints within group of cells (thres).
                         --> self.lib_[...] = empty dictionary that is filled later.
                             --> lib_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
+                        --> self.indices_not_clustered = empty array that is filled later.
                         --> self.E_score = set to infinity, because if we don't cluster the data in the first iteration the E_score is not representative.
                         --> self.Sil_score = set to 0, because if we don't cluster the data in the first iteration the Sil_score is not representative.
                         --> self.lib_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.
                         --> self.lib_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
         '''
-        
         self.scope = scope
         self.subspaces = subspaces 
         self.thres = thres 
         self.lib_data = data
-        self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
         self.lib_axis = {}
         self.lib_interval = {}
-        self.lib_cells = {}
         self.lib_grid = {}
-        self.lib_clustered = {}        
+        self.lib_clustered = {}    
+        self.indices_not_clustered = np.array([])
         self.E_score = float('inf')
         self.Sil_score = -2
         self.lib_Escores = {}
         self.lib_silscores = {}
-        
-        
+            
         
     def interval_data(self, data={}):
         '''
@@ -79,14 +77,15 @@ class GCA:
                         --> Value = list of floats
         Postconditions: A dictionary:
                         --> Key = Axis
-                        --> Value = list of floats which represent the intervals that make the boundries of the subspaces
+                        --> Value = list of floats which represent the intervals that make the boundaries of the subspaces
         Task of function: calculate the boundries of the supspaces for every axis
         '''
-        
-        if self.lib_data == {}:
+        assert data != {}, "No input given or empty dictionary given as input for 'data'. --> interval_data(data)"
+        assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> interval_data(data)"
+        if data != self.lib_data:
             self.lib_data = data
         
-        # CONVERT THE DATA IN LIB_DATA TO A DICTIONARY WITH THE KEYS BEING THE AXES AND THE VALUES BEING THE CORRESPONDING VALUES OF EVERY AXES FOR EVERY PROTEIN
+        # CONVERT THE DATA IN LIB_DATA TO A DICTIONARY WITH THE KEYS BEING THE AXES AND THE VALUES BEING THE CORRESPONDING VALUES OF EVERY AXIS FOR EVERY PROTEIN
         for axis in range(len(list(self.lib_data.values())[0])): 
             x = []
             for index in self.lib_data: 
@@ -130,27 +129,27 @@ class GCA:
             
             for axis in grid:
                 self.lib_grid[index][axis] = grid[axis][i]        
-        
     
     
     def assign_neigbours(self, index0, cluster):
         '''
         Precondition: 
-                    1. protein index for which the neigbours needs to be found
-                    2. cluster nr the neigbours are assigned to 
-        Postconditions: a list containing the protein IDs of all the neigbouring proteins to the starting protein
-        Task of function: find all the neigbours of starting protein x and assign it to the same group
+                    index0: protein ID of the protein for which the neigbours need to be found
+                    cluster: list to which the newfound neigbours are assigned
+                    options: list of the ID's of all proteins that are not yet clustered (and thus possible neighbours to index0)
+        Postconditions: the protein IDs of all the neigbouring proteins to the starting protein are added to the list 'cluster'
+        Task of function: find all the neigbours of starting protein x and assign it to the same group, then repeat for those neighbours
         '''
-        
+
         neighbours = []
     
-        for index in self.indexes_not_clusterd: # LOOP OVER THE NOT YET ASSIGNED PROTEINS
+        for index in self.indices_not_clustered: # LOOP OVER THE NOT YET ASSIGNED PROTEINS
             # CHECK FOR EVERY, NOT YET ASSIGNED, PROTEIN IF THEY ARE IN RANGE TO BE CALLED A NEIGBOUR
             # --> IF TRUE: GROUP IT WITH THE ALREADY EXISTING GROUP OR GROUP IT WITH THE ORIGINAL PROTEIN
             if all([-self.scope <= axis_distance <= self.scope for axis_distance in np.subtract(self.lib_grid[index], self.lib_grid[index0])]):
                 neighbours.append(index)
                 cluster.append(index)
-                self.indexes_not_clusterd = np.delete(self.indexes_not_clusterd, np.where(self.indexes_not_clusterd == index))          
+                self.indices_not_clustered = np.delete(self.indices_not_clustered, np.where(self.indices_not_clustered == index))          
         
         # IF THE LIST CONTAINING NEIGBOURS CONSIST MORE THAN ONLY ITS OWN ID THEN IT CAN CALL ON ITS SELF TO FIND ALL THE OTHER NEIGBOURS UNTIL THERE ARE NONE TO BE FOUND
         if len(neighbours) > 1:
@@ -169,25 +168,21 @@ class GCA:
                         --> Value = list of protein ID's that are assigned to that cluster and are neigbours from eachother
         Task of function: cluster all the neigbours of every protein not yet assigned to a cluster 
         '''
+        assert data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
+        if self.lib_data != data:
+            self.lib_data = data
         
-        if self.lib_data == {}:
-            if data == {}:
-                raise ImportError("No input given. --> clustering(data) or __init__(data) or interval_data(data)")
-            else:
-                self.lib_data = data
-                self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
-        if (self.indexes_not_clusterd.size <= 1) & (self.lib_data != {}):
-            self.indexes_not_clusterd = np.array(list(self.lib_data.keys()))
-         
-        self.interval_data()
+        self.indices_not_clustered = np.array(list(self.lib_data.keys()))
+        self.interval_data(data)
         self.grid_data()
         
         cluster_nr = 0
         anticluster_nr = 0
         lib_anticlustered = {}
         
-        for index in self.indexes_not_clusterd: # LOOP OVER EVERY PROTEIN THAT IS NOT YET ASSIGNED TO ANY CLUSTER OR NON-CLUSTER
-            if index in self.indexes_not_clusterd: 
+        for index in self.indices_not_clustered: # LOOP OVER EVERY PROTEIN THAT IS NOT YET ASSIGNED TO ANY CLUSTER OR ANTICLUSTER
+            if index in self.indices_not_clustered: 
                 cluster = []
                 self.assign_neigbours(index,cluster)
                 
@@ -200,7 +195,7 @@ class GCA:
                 else:
                     lib_anticlustered[anticluster_nr] = cluster
                     anticluster_nr += 1
-        
+            
         # APPEND THE CLUSTER LIBRARY WITH THE LIBRARY CONTAINING THE NON-CLUSTERS             
         self.lib_clustered[-1] = lib_anticlustered
         
@@ -210,7 +205,7 @@ class GCA:
     
     def Escore(self):
         '''
-        Postconditions: E_score => score how good the k-means clustering fit is
+        Postconditions: E_score => score how good the grid-based clustering fit is
         Task of function: calculation the goodness of the k-means clustering application of certain centroids
         '''
         
@@ -220,15 +215,15 @@ class GCA:
         # CALCULATE THE CENTROIDS OF EVERY CLUSTER
         for k in self.lib_clustered: # LOOP OVER THE CLUSTERS
             if k >= 0: # ONLY CALCULATE THE CENTROIDS FOR THE CLUSTERS NOT FOR THE NOT ASSIGNED DATAPOINTS
-                cordinate = []
+                coordinate = []
                 for axis in self.lib_axis: # LOOP OVER THE AXES
                     mean_x = 0
                     
                     for protein in [value for index, value in self.lib_data.items() if index in self.lib_clustered[k]]: # CALCULATE THE MEAN VALUE OF THE AXIS
                         mean_x += protein[axis]
                     
-                    cordinate.append(mean_x / len(self.lib_clustered[k]))
-                    lib_centroid[k] = cordinate
+                    coordinate.append(mean_x / len(self.lib_clustered[k]))
+                    lib_centroid[k] = coordinate
         
         for k in lib_centroid: # CALCULATE FOR EVERY CLUSTER THE E_SCORE
             summation += np.sum([np.square(abs(np.subtract(lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
@@ -236,13 +231,13 @@ class GCA:
         # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE GRID CLUSTERING FIT
         self.E_score = summation / len(lib_centroid)
         
-        return self.E_score
+        return
     
     
     
     def silhouette_score(self):
         '''
-        Postconditions: silhouette_score => score how good the k-means clustering fit is
+        Postconditions: silhouette_score => score how good the grid-based clustering fit is
         Task of function: calculating a score using a better scoring system with more indicative score values:
             --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched to its neighbouring cluster.
             
@@ -254,7 +249,7 @@ class GCA:
         
         for index in self.lib_data:
             # GET THE CLUSTER #NR WHICH THE PROTEIN IS ASSIGNED TO
-            cluster_nr = [cluster for cluster, indexes in self.lib_clustered.items() if (index in indexes) and (cluster != -1)] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            cluster_nr = [cluster for cluster, indices in self.lib_clustered.items() if (index in indices) and (cluster != -1)] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
             
             #CHECK IF THE PROTEIN IS ASSIGNED TO A CLUSTER
             if cluster_nr != []:
@@ -281,86 +276,62 @@ class GCA:
         if np.isnan(self.Sil_score):
             self.Sil_score = float('-inf')
                 
-        return self.Sil_score
+        return
     
-    
-    
-    def optimize_e(self, subspace_min=10, subspace_max=20):
-        '''
-        Preconditions: range in which parameter subspaces can be varied
-        Postconditions: A dictionary:
-                        --> Key = Cluster #nr
-                        --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
-                        A dictionary:
-                        --> Key = subspace
-                        --> Value = E_score
-        Task of function: calculating which subspace gives the best results --> returning the clustered proteins for which the E_score is at its highest when comparing different subspaces
-        '''
+    def optimize(self, data={}, subspace_min=10, subspace_max=20, measure = 'Sil'):
+        assert data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
+        if self.lib_data != data:
+            self.lib_data = data
+        assert subspace_min < subspace_max, "subspace_min must be smaller than subspace_max. --> optimize(subspace_min,subspace_max)"
+        assert (measure == 'Sil' or measure == 'E'), "Measure must either be 'Sil' or 'E'. --> optimize(measure)"
         
         for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SUBSPACES THAT IS GIVEN
             self.subspaces = subspace
-            self.clustering()
-            self.Escore()
+            self.clustering(data)
             
-            self.lib_Escores[subspace] = self.E_score
+            if measure == 'Sil':
+                try: # CALCULATE THE SILHOUETTE SCORE AND SAVE IT
+                    self.silhouette_score()
+                    self.lib_silscores[subspace] = self.Sil_score
+                except: # WHEN GIVEN NaN (WHEN NOT ALL CLUSTERS ARE FILLED OR ONLY 1 CLUSTER EXISTS) RETURN A VALUE THAT IS OUT OF THE SILHOUETTE RANGE
+                    self.lib_silscores[subspace] = -2
+                    
+            else: # If not 'Sil', the measure is 'E' (see assert commands above)
+                self.Escore()
+                self.lib_Escores[subspace] = self.E_score
+                    
+            print(f'{((subspace-subspace_min)/(subspace_max-subspace_min))*100}% ', end='\r') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
         
-            print(f'{((subspace-subspace_min)/(subspace_max-subspace_min))*100}%', end='\r') # PRINT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
+        if measure == 'Sil':
+            self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
+        else:
+            self.subspaces = list(self.lib_Escores.keys())[np.argmax(list(self.lib_Escores.values()))]
+            
+        self.clustering(data)
+        self.Escore()
+        self.silhouette_score()
+        
+        return self.lib_clustered
 
-        self.subspaces =  list(self.lib_Escores.keys())[np.argmax(list(self.lib_Escores.values()))]
-        self.clustering()
-        self.Escore()
-        self.silhouette_score()
-        
-        return self.lib_clustered
-    
-    
-    
-    def optimize_sil(self, subspace_min=10, subspace_max=20):
-        '''
-        Preconditions: range in which parameter subspaces can be varied
-        Postconditions: A dictionary:
-                        --> Key = Cluster #nr
-                        --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
-                        A dictionary:
-                        --> Key = subspace
-                        --> Value = Sil_score
-        Task of function: calculating which subspace gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different subspaces
-        '''
-        
-        self.lib_silscores = {}
-        
-        for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SUBSPACES THAT IS GIVEN
-            self.subspaces = subspace
-            self.clustering()
-            
-            try: # CALCULATE THE SILHOUETTE SCORE AND SAVE IT
-                self.silhouette_score()
-                self.lib_silscores[subspace] = self.Sil_score
-            except: # WHEN GIVEN NaN (WHEN NOT ALL CLUSTERS ARE FILLED OR ONLY 1 CLUSTER EXISTS) RETURN A VALUE THAT IS OUT OF THE SILHOUETTE RANGE
-                self.lib_silscores[subspace] = -2
-                
-            print(f'{((subspace-subspace_min)/(subspace_max-subspace_min))*100}%', end='\r') # PRINT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
-               
-        self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
-        self.clustering()
-        self.Escore()
-        self.silhouette_score()
-        
-        return self.lib_clustered
 
 lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
    
-gca = GCA(data=lib_data)
-gca_results = gca.optimize_e(10,50)
-gca_scores = gca.lib_Escores
+gbca = GBCA(data=lib_data)
+gbca_results = gbca.optimize(lib_data,8,9,'Sil')
+gbca_scores = gbca.lib_Escores
+
 
 def return_txt_file(data, name, format_data=lib_data):
     lib_unfolded = dict()
     score = False
-    
+    anticlusters = []
     for cluster in data:
-        if type(data[cluster]) == int:
+        if cluster == -1:
+            for i in data[cluster]:
+                anticlusters.append(data[cluster][i])
+        if type(data[cluster]) == int: 
             lib_unfolded[data[cluster]] = cluster
         else:
             try:
@@ -371,15 +342,14 @@ def return_txt_file(data, name, format_data=lib_data):
                 break
     
     file = open(f'{name}results.txt', 'w')
-    indexes_lost = list()
     
     if score == False:
         for INDEX in format_data:
             try:
                 line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
                 file.write(line)
-            except:
-                indexes_lost.append(INDEX)
+            except Exception:
+                pass
     else:
         for subspace in data:
             line = str(subspace) + " " + str(data[subspace]) + "\n"            
@@ -387,9 +357,8 @@ def return_txt_file(data, name, format_data=lib_data):
             
     file.close()
     
-    if len(indexes_lost) > 0:
-        print(f'Function: {name} --> these indexes are lost: {indexes_lost}')
+    if len(anticlusters) > 0:
+        print(f'\nFunction: {name} --> These clusters are lost (size is below threshold): {anticlusters}')
     
-#return_txt_file(gca_results, 'gca_')
-return_txt_file(gca_scores, 'gca_e_')
-
+return_txt_file(gbca_results, 'gca_')
+return_txt_file(gbca_scores, 'gca_e_')
