@@ -357,11 +357,9 @@ def main():
     Classes(Dagen,frequences=True)                      # determine each values class
     add_expression(Dagen)                               # calculate the r-value for expression per value
     rDict, Filterinfo = Daysdict(Dagen,r_filter)        # make one library for all r-values
-    if input("Would you like filtered data? \n"): 
-        rDict = filtering(rDict,Filterinfo)                 # filter the library based
-        outfile_name = "Filtered_clusterdata.txt"
-    else: outfile_name = "Unfiltered_clusterdata.txt"
-    dict_to_txt(rDict,outfile_name,"  ")           # make a file of filtered data for phase 2
+    dict_to_txt(rDict,"Unfiltered_clusterdata.txt","  ")                # make a file of filtered data for phase 2
+    rDict = filtering(rDict,Filterinfo)                 # filter the library based
+    dict_to_txt(rDict,"Filtered_clusterdata.txt","  ")           # make a file of filtered data for phase 2
     if input("Would you like the plots of phase 1? \n"): # ask whether the user would like to see the plots of phase 1 (boolean input)
         plot_phase1(Dagen,rDict,r_filter)               # plot everything there is to plot in phase 1 based on unfiltered data
     
