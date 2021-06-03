@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
-Created on Thu Apr 29 10:17:49 2021
-@author: Iris Almekinders en Niels van Noort
+Created on Thu Jun  3 09:38:50 2021
+
+@author: irisalmekinders
 """
 
 # libraries
@@ -220,9 +220,9 @@ def filtering(rDict, Filterinfo):
     Filtered_rDict = {}
     
     for ID in rDict:
-        if (Filterinfo[ID][0] + Filterinfo[ID][2] < 3) and (Filterinfo[ID][1] == 0) and (Filterinfo[ID][3] < 8):
+        if (Filterinfo[ID][0] + Filterinfo[ID][2] < 3) and (Filterinfo[ID][1] == 0) and (Filterinfo[ID][3] < 8): 
             Filtered_rDict[ID] = rDict[ID]
-            
+                
     return Filtered_rDict
 
 
@@ -236,7 +236,7 @@ def dict_to_txt(rDict,filename,parse):
     outfile = open(filename,'w') # start writing in a file called filename
     
     for ID in rDict:
-        outstring = str(ID) 
+        outstring = str(ID)
         for r in rDict[ID]: outstring += parse + str('{:.3f}'.format(r))
         outfile.write(outstring+"\n")
         
@@ -252,7 +252,7 @@ def plot_phase1(Dagen,rDict,r_filter=0.5):
             plot_dagen(Dagen,log,norm)
             
     plot_hist(rDict) # to plot the histograms
-    line_plots(rDict,r_filter) # to plot the bar plots
+    line_plots(rDict,r_filter) # to plot the line plots
     
 
 def plot_dagen(Dagen,log=False,Norm=False):
@@ -333,8 +333,8 @@ def line_plots(rDict,r_filter,movement=256):
     ncols = int(float(input("How many lineplots would you like? \n"))**0.5)
     # ncols = math.ceil(len(rDict)**0.5) # to plot all points (not recommended)
     nrows = ncols
-    fig, ax = plt.subplots(ncols,nrows,figsize=(40,40),squeeze=False,sharex=True,sharey=True)
-    fig.suptitle(str(ncols**2)+" lijndiagrammen met filtergrenzen",size=60,weight='bold') # this will be changed... for now we're a bit pissed at the number of plots and the time it takes to draw them
+    fig, ax = plt.subplots(ncols,nrows,figsize=(ncols*5,ncols*5),squeeze=False,sharex=True,sharey=True)
+    fig.suptitle(str(ncols**2)+" lijndiagrammen met filtergrenzen",size=ncols*10,weight='bold') 
     df_expr = pd.DataFrame.from_dict(rDict) # making a dataframe of rDict for more efficiency in plotting
     df_expr['Dagen'] = Day_numbers # adding the days in a column to make x-axis linear
     df_expr.set_index("Dagen",inplace=True)
@@ -346,21 +346,21 @@ def line_plots(rDict,r_filter,movement=256):
             ax[row,col].axhline(y=r_filter,c='r') # plot upper line
             ax[row,col].axhline(y=-r_filter,c='r') # plot lower line
             ax[row,col].set_xticks(Day_numbers)
-      
+            ax[row,col].set_ylim(-2.5, 2.5)
     
 def main():
-    r_filter= 0.5                                       # to set the r_filter value
+    r_filter= 0.5                                           # to set the r_filter value
     
-    Dagen = find_files('dag')                           # make list of dictionaries
-    normSig2_add(Dagen)                                 # normalise values
-    Log_add(Dagen)                                      # calculate the LOG of values for plotting
-    Classes(Dagen,frequences=True)                      # determine each values class
-    add_expression(Dagen)                               # calculate the r-value for expression per value
-    rDict, Filterinfo = Daysdict(Dagen,r_filter)        # make one library for all r-values
-    dict_to_txt(rDict,"Unfiltered_clusterdata.txt","  ")                # make a file of filtered data for phase 2
-    rDict = filtering(rDict,Filterinfo)                 # filter the library based
-    dict_to_txt(rDict,"Filtered_clusterdata.txt","  ")           # make a file of filtered data for phase 2
-    if input("Would you like the plots of phase 1? \n"): # ask whether the user would like to see the plots of phase 1 (boolean input)
-        plot_phase1(Dagen,rDict,r_filter)               # plot everything there is to plot in phase 1 based on unfiltered data
+    Dagen = find_files('dag')                               # make list of dictionaries
+    normSig2_add(Dagen)                                     # normalise values
+    Log_add(Dagen)                                          # calculate the LOG of values for plotting
+    Classes(Dagen,frequences=True)                          # determine each values class
+    add_expression(Dagen)                                   # calculate the r-value for expression per value
+    rDict, Filterinfo = Daysdict(Dagen,r_filter)            # make one library for all r-values
+    dict_to_txt(rDict,"Unfiltered_clusterdata.txt","  ")    # make a file of filtered data for phase 2
+    rDict = filtering(rDict,Filterinfo)                     # filter the library based
+    dict_to_txt(rDict,"Filtered_clusterdata.txt","  ")      # make a file of filtered data for phase 2
+    if input("Would you like the plots of phase 1? \n"):    # ask whether the user would like to see the plots of phase 1 (boolean input)
+        plot_phase1(Dagen,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
     
     return "Filtered_clusterdata.txt","Unfiltered_clusterdata.txt"
