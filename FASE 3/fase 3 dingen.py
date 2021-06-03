@@ -1,226 +1,57 @@
 from Bio import Entrez
-from Bio import UniGene
+import numpy as np
 
-dictionary = {1005802: 'ENSMUSG00000038274',
- 520353: 'ENSMUSG00000024644',
- 518913: 'ENSMUSG00000021665',
- 478158: 'ENSMUSG00000060216',
- 535030: 'ENSMUSG00000030536',
- 536520: 'ENSMUSG00000013698',
- 1107566: 'ENSMUSG00000034349',
- 1040661: 'ENSMUSG00000028108',
- 1040154: 'ENSMUSG00000021367',
- 1077458: 'ENSMUSG00000000753',
- 1077712: 'ENSMUSG00000030082',
- 1040887: 'ENSMUSG00000001493',
- 1077501: 'ENSMUSG00000030804',
- 1040230: 'ENSMUSG00000026837',
- 1077734: 'ENSMUSG00000070436',
- 1227730: 'ENSMUSG00000031502',
- 1227446: 'ENSMUSG00000006731',
- 1227964: 'ENSMUSG00000032116',
- 1227239: 'ENSMUSG00000025064',
- 1449868: 'ENSMUSG00000034981',
- 775297: 'ENSMUSG00000027435',
- 459497: 'ENSMUSG00000072941',
- 479543: 'ENSMUSG00000021922',
- 792960: 'ENSMUSG00000026956',
- 1382197: 'ENSMUSG00000029661',
- 1332871: 'ENSMUSG00000022754',
- 1226115: 'ENSMUSG00000028581',
- 933757: 'ENSMUSG00000003363',
- 835372: 'ENSMUSG00000026478',
- 806093: 'ENSMUSG00000021133',
- 560899: 'ENSMUSG00000037742',
- 560901: 'ENSMUSG00000024538',
- 1005637: 'ENSMUSG00000017760',
- 1005138: 'ENSMUSG00000005397',
- 517763: 'ENSMUSG00000050335',
- 517556: 'ENSMUSG00000027199',
- 516594: 'ENSMUSG00000059498',
- 517428: 'ENSMUSG00000032440',
- 368442: 'ENSMUSG00000020241',
- 367133: 'ENSMUSG00000047945',
- 368514: 'ENSMUSG00000031503',
- 335808: 'ENSMUSG00000004665',
- 935643: 'ENSMUSG00000026072',
- 960079: 'ENSMUSG00000027087',
- 2102061: 'ENSMUSG00000024909',
- 2101885: 'ENSMUSG00000020114',
- 524351: 'ENSMUSG00000022892',
- 1038921: 'ENSMUSG00000026042',
- 696896: 'ENSMUSG00000032332',
- 1223761: 'ENSMUSG00000042436',
- 1224492: 'ENSMUSG00000021614',
- 597257: 'ENSMUSG00000030579',
- 1223739: 'ENSMUSG00000032046',
- 1211398: 'ENSMUSG00000042286',
- 596455: 'ENSMUSG00000031659',
- 596643: 'ENSMUSG00000041515',
- 597159: 'ENSMUSG00000004846',
- 1222894: 'ENSMUSG00000020186',
- 1396864: 'ENSMUSG00000002020',
- 406747: 'ENSMUSG00000024529',
- 1278753: 'ENSMUSG00000015312',
- 426173: 'ENSMUSG00000022371',
- 779057: 'ENSMUSG00000028591',
- 1162896: 'ENSMUSG00000025130',
- 876696: 'ENSMUSG00000043004',
- 903245: 'ENSMUSG00000018593',
- 819734: 'ENSMUSG00000021186',
- 819789: 'ENSMUSG00000001435',
- 560115: 'ENSMUSG00000030659',
- 541156: 'ENSMUSG00000020674',
- 350927: 'ENSMUSG00000031253',
- 1004409: 'ENSMUSG00000025232',
- 989776: 'ENSMUSG00000028024',
- 990152: 'ENSMUSG00000027533',
- 1004124: 'ENSMUSG00000049751',
- 990960: 'ENSMUSG00000048720',
- 515926: 'ENSMUSG00000024498',
- 903231: 'ENSMUSG00000000693',
- 959695: 'ENSMUSG00000062127',
- 948910: 'ENSMUSG00000020053',
- 2102050: 'ENSMUSG00000027204',
- 524759: 'ENSMUSG00000052459',
- 524067: 'ENSMUSG00000010830',
- 1002364: 'ENSMUSG00000028656',
- 1020649: 'ENSMUSG00000040747',
- 635981: 'ENSMUSG00000049103',
- 388693: 'ENSMUSG00000018819',
- 618120: 'ENSMUSG00000040613',
- 576062: 'ENSMUSG00000015947',
- 574757: 'ENSMUSG00000070354',
- 440614: 'ENSMUSG00000062593',
- 598176: 'ENSMUSG00000058818',
- 400761: 'ENSMUSG00000048001',
- 1382096: 'ENSMUSG00000024397',
- 1383390: 'ENSMUSG00000001020',
- 403755: 'ENSMUSG00000021190',
- 402270: 'ENSMUSG00000001506',
- 536961: 'ENSMUSG00000031605',
- 536913: 'ENSMUSG00000001750',
- 777568: 'ENSMUSG00000052160',
- 871947: 'ENSMUSG00000006519',
- 871756: 'ENSMUSG00000030921',
- 805411: 'ENSMUSG00000028656',
- 819722: 'ENSMUSG00000001555',
- 790062: 'ENSMUSG00000064080',
- 819796: 'ENSMUSG00000067377',
- 539525: 'ENSMUSG00000005973',
- 539055: 'ENSMUSG00000016256',
- 976978: 'ENSMUSG00000003814',
- 976930: 'ENSMUSG00000053038',
- 514004: 'ENSMUSG00000024501',
- 902269: 'ENSMUSG00000020097',
- 891219: 'ENSMUSG00000021822',
- 1038386: 'ENSMUSG00000021709',
- 1037686: 'ENSMUSG00000053317',
- 522368: 'ENSMUSG00000031400',
- 1050526: 'ENSMUSG00000016262',
- 576361: 'ENSMUSG00000039405',
- 1154002: 'ENSMUSG00000023885',
- 334712: 'ENSMUSG00000001128',
- 634957: 'ENSMUSG00000070354',
- 318867: 'ENSMUSG00000037337',
- 316763: 'ENSMUSG00000058715',
- 1149877: 'ENSMUSG00000027422',
- 1193468: 'ENSMUSG00000032575',
- 1193680: 'ENSMUSG00000068220',
- 1150770: 'ENSMUSG00000027712',
- 1379900: 'ENSMUSG00000060519',
- 1365095: 'ENSMUSG00000030761',
- 1364755: 'ENSMUSG00000044827',
- 669703: 'ENSMUSG00000022483',
- 1277623: 'ENSMUSG00000001349',
- 762309: 'ENSMUSG00000022440',
- 720629: 'ENSMUSG00000001435',
- 314112: 'ENSMUSG00000078664',
- 316867: 'ENSMUSG00000078189',
- 334798: 'ENSMUSG00000029994',
- 334225: 'ENSMUSG00000024935',
- 334176: 'ENSMUSG00000007891',
- 1746311: 'ENSMUSG00000051732',
- 337797: 'ENSMUSG00000033880',
- 1749980: 'ENSMUSG00000031555',
- 976916: 'ENSMUSG00000021242',
- 945526: 'ENSMUSG00000028194',
- 865426: 'ENSMUSG00000026547',
- 865364: 'ENSMUSG00000027248',
- 907260: 'ENSMUSG00000037902',
- 873807: 'ENSMUSG00000038784',
- 874189: 'ENSMUSG00000047497',
- 876010: 'ENSMUSG00000031253',
- 875051: 'ENSMUSG00000026837',
- 1038124: 'ENSMUSG00000032431',
- 1038042: 'ENSMUSG00000028494',
- 1022045: 'ENSMUSG00000003779',
- 620800: 'ENSMUSG00000035352',
- 976659: 'ENSMUSG00000021477',
- 976483: 'ENSMUSG00000039239',
- 619998: 'ENSMUSG00000020120',
- 1139077: 'ENSMUSG00000020695',
- 1149138: 'ENSMUSG00000030104',
- 1148891: 'ENSMUSG00000025473',
- 1245329: 'ENSMUSG00000029925',
- 1265347: 'ENSMUSG00000022372',
- 1263770: 'ENSMUSG00000018774',
- 642577: 'ENSMUSG00000074145',
- 1260116: 'ENSMUSG00000031636',
- 1230140: 'ENSMUSG00000041801',
- 1446589: 'ENSMUSG00000034855',
- 1447284: 'ENSMUSG00000038607',
- 596534: 'ENSMUSG00000038642',
- 303438: 'ENSMUSG00000049775',
- 671364: 'ENSMUSG00000071847',
- 653582: 'ENSMUSG00000029061',
- 1383367: 'ENSMUSG00000047139',
- 1382758: 'ENSMUSG00000069516',
- 331512: 'ENSMUSG00000020473',
- 1382311: 'ENSMUSG00000032085',
- 1383744: 'ENSMUSG00000040152',
- 616626: 'ENSMUSG00000056025',
- 617281: 'ENSMUSG00000034445',
- 821676: 'ENSMUSG00000003426',
- 734101: 'ENSMUSG00000035493',
- 876033: 'ENSMUSG00000048163',
- 643902: 'ENSMUSG00000079419',
- 637338: 'ENSMUSG00000029771',
- 619970: 'ENSMUSG00000044674',
- 618824: 'ENSMUSG00000044811',
- 597280: 'ENSMUSG00000026042',
- 598060: 'ENSMUSG00000024679',
- 482369: 'ENSMUSG00000015243',
- 437213: 'ENSMUSG00000021702',
- 406897: 'ENSMUSG00000046402',
- 354601: 'ENSMUSG00000079111',
- 336325: 'ENSMUSG00000019997',
- 334132: 'ENSMUSG00000001119',
- 330613: 'ENSMUSG00000016262',
- 315913: 'ENSMUSG00000035279'}
+def file_to_lib(FileName, columns=False):
+    '''
+        Preconditions:  'path/filename' --> the file you want to open and convert to a dictionary.
+        Postconditions: A dictionary:
+                        --> Key = first integer 
+                        --> Value = floats or integers after the first protein ID integer
+                            --> If value after protein ID consist of only 1 element --> return value of dictionary as a integer.
+                            --> If value after protein ID constist of more then 1 element --> return value of dictionary as np.array with floats as values of this array.
+    '''
+    read_data = open(FileName)
+    opened_data = read_data.read()
+    opened_data = opened_data.splitlines()
+    read_data.close()
+    lib = {}
+    
+    for lines in opened_data:
+        if 'cloneid' not in lines.lower():
+            line = lines.split()
+            if len(line[1:]) == 1:
+                lib[int(line[0])] = int(line[1])
+            else:
+                try:
+                    lib[int(line[0])] = np.array(line[1:]).astype(float)
+                except:
+                    lib[int(line[0])] = np.array(line[1:]).astype(str)
+        else:
+            cols = lines.split()
+            
+    if columns:
+        return lib, cols
+    else:
+        return lib
 
-Entrez.email = "p.a.j.hilbers@tue.nl"
-# for i in dictionary:
-#     info = Entrez.esearch(db="gene", term=dictionary[i])
-#     try:
-#         handle = Entrez.esummary(db="gene", id=Entrez.read(info)['IdList'][0])
-#         record = Entrez.read(handle)
-#         print(record['DocumentSummarySet']['DocumentSummary'][0]['Description'])
-#     except:
-#         try: 
-#             handle = Entrez.esummary(db="gene", id=Entrez.read(info)['IdList'][0][0])
-#             info = Entrez.esearch(db="gene", term=dictionary[i])
-#             print(Entrez.read(info)['IdList'])
-#         except:
-#             print("not found: ",dictionary[i])
+lib_family = file_to_lib('Data\CloneIdFamily.txt')
+lib_clust = file_to_lib('Data\clusterresultaten.txt')
+lib_codes, columns = file_to_lib('Data/accessionnumbers.txt', True)
 
-info = Entrez.esearch(db="gene", term='ENSMUSG00000001119')
-handle = Entrez.esummary(db="gene", id=Entrez.read(info)['IdList'][0])
-record = Entrez.read(handle)
-#print([i for i in record['DocumentSummarySet']['DocumentSummary'][0]])#[0])
-#print('\n\n')
-#print(record['DocumentSummarySet']['DocumentSummary'][0])#['Status'])
-print(dir(Entrez))
-#print(Entrez.efetch(db="gene", id=Entrez.read(info)['IdList'][0], rettype="gb", retmode="text"))
-handle = Entrez.efetch(db="gene", id=Entrez.read(info)['IdList'][0], rettype="gb", retmode="text")
-print(handle.readline().strip())
+def get_location(code='ensemble'):
+    location = [i for i, element in enumerate(columns[1:]) if code in element][0]
+    
+    for cluster in np.unique(list(lib_clust.values())):
+        terms = [value[location] for index, value in lib_codes.items() if (index in lib_clust.keys()) and (lib_clust[index] == cluster) and (len(value) == 3)]
+        terms_not_found = [index for index, value in lib_codes.items() if (index in lib_clust.keys()) and (lib_clust[index] == cluster) and (len(value) != 3)]
+        
+        Entrez.email = 'd.devetzis@student.tue.nl'        
+        handle = Entrez.efetch(db='gene', id=terms, retmode = 'html')
+        lines = handle.readlines()
+        
+        functions = [lines[i+1] for i,s in enumerate(lines) if ('enables' in s)  and ('anchor' in lines[i+1])]
+        processes = [lines[i+1] for i,s in enumerate(lines) if ('involved' in s)  and ('anchor' in lines[i+1])]
+        components = [lines[i+1] for i,s in enumerate(lines) if ('located' in s)  and ('anchor' in lines[i+1])]
+        locations = [lines[i+1:i+2] for i, s in enumerate(lines) if ('label "Text Summary"' in s)]
+        
+get_location()
