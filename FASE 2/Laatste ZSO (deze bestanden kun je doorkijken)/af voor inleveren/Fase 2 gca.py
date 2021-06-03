@@ -279,6 +279,20 @@ class GBCA:
         return
     
     def optimize(self, data={}, subspace_min=10, subspace_max=20, measure = 'Sil'):
+        '''
+        Preconditions:  data: a dictionary:
+                            --> Key = protein ID
+                            --> Value = list of floats
+                        subspace_min, subspace_max: range in which parameter subspaces can be varied
+                        measure: measure by which to evaluate how well the clustering fits (either 'E' for E-score or 'Sil' for silhouette score)
+        Postconditions: lib_clustered: a dictionary:
+                                    --> Key = Cluster #nr
+                                    --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
+                        lib_Silscores/lib_Escores: a dictionary:
+                                                --> Key = subspace
+                                                --> Value = Sil_score/E_score
+        Task of function: calculating which subspace gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different subspaces
+        '''
         assert data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
         if self.lib_data != data:
