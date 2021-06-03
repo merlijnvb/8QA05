@@ -1,0 +1,301 @@
+df van cluster  1
+                       adrenal
+adrenal                      8
+adrenal adult                2
+appendix                     3
+bladder adult                1
+bone marrow                  2
+brain                        7
+cerebellum adult             2
+cns e11.5                    1
+cns e14                      2
+cns e18                      2
+colon                        2
+colon adult                  1
+cortex adult                 2
+endometrium                  2
+fat                          1
+frontal lobe adult           2
+gall                         2
+gall bladder                 1
+heart                        7
+heart adult                  2
+kidney                       8
+kidney adult                 1
+large                        2
+large intestine adult        1
+limb                         2
+limb e14.5                   2
+liver                        3
+liver e14                    1
+liver e14.5                  1
+liver e18                    1
+lung                         8
+lung adult                   2
+lymph node                   6
+mammary gland adult          1
+muscle                       3
+ovary                        4
+ovary adult                  1
+placenta                     5
+prostate                     2
+skin                         2
+small                        2
+spleen                       7
+spleen adult                 2
+stomach                      4
+stomach adult                1
+testis                       6
+testis adult                 2
+thymus                       3
+thymus adult                 2
+thyroid                      5
+urinary bladder              2
+uterus                       2
+
+df to use van cluster 1
+            adrenal
+adrenal           8
+brain             7
+heart             7
+kidney            8
+lung              8
+lymph node        6
+spleen            7
+testis            6
+
+
+df van cluster  2
+         adrenal
+adrenal        1
+brain          1
+heart          1
+kidney         1
+lung           1
+spleen         1
+testes         1
+thymus         1
+
+df to use van cluster 2
+Empty DataFrame
+Columns: [adrenal]
+Index: []
+
+
+df van cluster  3
+                            adrenal
+adrenal                          13
+appendix                          9
+bladder adult                     3
+bone                              4
+bone marrow                       2
+brain                             9
+cerebellum adult                  3
+cns                               2
+cns e11.5                         4
+cns e14                           7
+cns e18                           6
+colon                             4
+cortex adult                      1
+duodenum                          4
+endometrium                       4
+esophagus                         2
+fat                               4
+frontal                           6
+frontal lobe adult                1
+gall                              4
+gall bladder                      9
+genital fat pad adult             2
+heart                             7
+heart adult                       1
+kidney                           13
+kidney adult                      1
+large intestine adult             1
+limb e14.5                        2
+liver                             7
+liver adult                       1
+liver e18                         2
+lung                             10
+lung adult                        3
+lymph node                        4
+mammary                           2
+mammary gland adult               3
+muscle                            3
+ovary                             2
+placenta                          6
+placenta adult                    2
+prostate                          4
+salivary gland                    2
+skin                              2
+small intestine                   4
+spleen                           11
+stomach                           1
+subcutaneous fat pad              4
+subcutaneous fat pad adult        1
+testes                            2
+testis                            4
+testis adult                      1
+thymus                            4
+thymus adult                      1
+thyroid                           7
+urinary bladder                   7
+uterus                            3
+whole brain                       4
+whole brain e14.5                 5
+
+df to use van cluster 3
+                 adrenal
+adrenal               13
+appendix               9
+brain                  9
+cns e14                7
+cns e18                6
+frontal                6
+gall bladder           9
+heart                  7
+kidney                13
+liver                  7
+lung                  10
+placenta               6
+spleen                11
+thyroid                7
+urinary bladder        7
+
+
+df van cluster  4
+                   adrenal
+adrenal                 10
+adrenal adult            2
+appendix                 4
+bladder adult            3
+bone marrow              4
+                   ...
+thyroid                  5
+urinary                  2
+urinary bladder          4
+uterus                   2
+whole brain e14.5        3
+
+[61 rows x 1 columns]
+
+df to use van cluster 4
+            adrenal
+adrenal          10
+brain             9
+cns e11.5         6
+kidney            8
+limb e14.5        6
+ovary             6
+spleen            7
+testis            6
+
+
+df van cluster  5
+                       adrenal
+adrenal                      5
+appendix                     4
+bladder adult                3
+bone marrow                  2
+brain                        6
+cerebellum adult             2
+cns                          2
+cns e11.5                    2
+cns e14                      5
+cns e18                      3
+colon                        3
+colon adult                  2
+cortex adult                 2
+duodenum                     1
+esophagus                    1
+fat                          3
+frontal                      2
+frontal lobe                 2
+frontal lobe adult           1
+gall bladder                 1
+heart                        4
+kidney                       5
+large intestine adult        1
+limb                         6
+liver                        2
+liver adult                  1
+lung                         4
+lung adult                   2
+lymph node                   4
+mammary gland adult          1
+muscle                       3
+ovary                        1
+ovary adult                  1
+placenta                     2
+placenta adult               1
+prostate                     1
+skin                         1
+small intestine              1
+spleen                       7
+spleen adult                 1
+testis                       3
+testis adult                 1
+thymus                       3
+thymus adult                 2
+thyroid                      1
+urinary bladder              1
+whole brain                  2
+whole brain e14.5            4
+
+df to use van cluster 5
+        adrenal
+brain         6
+limb          6
+spleen        7
+
+
+df van cluster  6
+                   adrenal
+adrenal                 21
+adrenal adult            7
+appendix                12
+bladder                  4
+bladder adult            3
+                   ...
+thyroid                 11
+urinary bladder          7
+uterus                   1
+whole brain              2
+whole brain e14.5        7
+
+[62 rows x 1 columns]
+
+df to use van cluster 6
+                     adrenal
+adrenal                   21
+adrenal adult              7
+appendix                  12
+brain                     14
+cns e11.5                  9
+cns e14                    6
+cns e18                   11
+colon                     11
+cortex adult               6
+duodenum                   8
+endometrium                9
+fat                        8
+frontal lobe adult         7
+gall bladder               6
+heart                     13
+kidney                    18
+limb e14.5                 8
+liver                     10
+lung                      13
+lymph node                 9
+mammary gland adult        8
+muscle                     6
+ovary adult                6
+placenta                   7
+prostate                   7
+skin                       6
+small intestine            8
+spleen                    16
+testis                    10
+thymus                     8
+thyroid                   11
+urinary bladder            7
+whole brain e14.5          7
