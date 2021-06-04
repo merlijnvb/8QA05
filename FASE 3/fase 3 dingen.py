@@ -38,7 +38,23 @@ lib_family = file_to_lib('Data\CloneIdFamily.txt')
 lib_clust = file_to_lib('Data\clusterresultaten.txt')
 lib_codes, columns = file_to_lib('Data/accessionnumbers.txt', True)
 
-def get_location(code='ensemble'):
+def get_location(code='ensemble'):    
+    def list_to_string(array, desc=False):
+        line = ''
+        for element in array:
+            line += element.rstrip()
+        
+        return line
+    def list_to_int(array):
+        if array != []:
+            interger = array[0]
+        else:
+            interger = 1
+        return interger
+    def convert(array):
+        array = [line[line.find('"',0)+1:line.find('"',-1)-1] for line in array]
+        return array 
+    
     location = [i for i, element in enumerate(columns[1:]) if code in element][0]
     
     for cluster in np.unique(list(lib_clust.values())):
@@ -46,12 +62,31 @@ def get_location(code='ensemble'):
         terms_not_found = [index for index, value in lib_codes.items() if (index in lib_clust.keys()) and (lib_clust[index] == cluster) and (len(value) != 3)]
         
         Entrez.email = 'd.devetzis@student.tue.nl'        
-        handle = Entrez.efetch(db='gene', id=terms, retmode = 'html')
+        handle = Entrez.efetch(db='gene', id=f'{terms} [mus musculus]', retmode = 'html')
         lines = handle.readlines()
         
-        functions = [lines[i+1] for i,s in enumerate(lines) if ('enables' in s)  and ('anchor' in lines[i+1])]
-        processes = [lines[i+1] for i,s in enumerate(lines) if ('involved' in s)  and ('anchor' in lines[i+1])]
-        components = [lines[i+1] for i,s in enumerate(lines) if ('located' in s)  and ('anchor' in lines[i+1])]
-        locations = [lines[i+1:i+2] for i, s in enumerate(lines) if ('label "Text Summary"' in s)]
+        functions = [s.rstrip() for i,s in enumerate(lines) if ('enables' in lines[i-1]) and ('anchor' in s)]
+        functions = np.unique(convert(functions), return_counts=True) 
+        processes = [s.rstrip() for i,s in enumerate(lines) if ('involved' in lines[i-1]) and ('anchor' in s)]
+        processes = np.unique(convert(processes), return_counts=True)
+        components = [s.rstrip() for i,s in enumerate(lines) if ('located' in lines[i-1]) and ('anchor' in s)]
+        components = np.unique(convert(components), return_counts=True)
+        
+        locations = [s.rstrip() for i, s in enumerate(lines) if ('RPKM' in s) and ('expression' in s) and ('}' in lines[i+1])]
+        locations += [list_to_string(lines[i:i+[x for x, val in enumerate(lines[i:i+20]) if '}' in val][0]]) for i, s in enumerate(lines) if ('RPKM' in s) and ('expression' in s) and ('}' not in lines[i+1])]
+        
+        locations_form = []
+        
+        for txt in locations:
+            txt = txt.split()
+            RPKM = [float(s[:s.find(')')]) for i, s in enumerate(txt) if ('RPKM' in txt[i-1])]
+            description = [s for i, s in enumerate(txt) if ('text' not in s) and ('RPKM' not in s) and (')' not in s) and ('and' not in s) and ('tissues' not in s) and ('other' not in s) and (s.isdigit() == False)]
+        
+            locations_form.append((description,RPKM))
+            
+        print('\n',functions)
+        print('\n',processes)
+        print('\n',components)
+        print('\n',locations_form)
         
 get_location()
