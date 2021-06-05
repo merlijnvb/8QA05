@@ -18,6 +18,10 @@ verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs
 min_frequency = 2
 in_nr_clusters = 1
 min_length_substring = 4
+f_clus_res = 'kmca_results.txt'
+f_desc = 'GenDescription2.txt'
+f_exprs = 'Voorbeeld_clusterdata.txt'
+f_fam = 'CloneIdFamily.txt'
 
 def data_inlezen(filename): 
     infile = open(filename)
@@ -152,6 +156,7 @@ def telwoorden(cluster_data, beschrijvingen_data, verwijderen, min_frequency, in
         lib_substrings.pop(key)
 
     return lib_substrings
+'''hier moet nog aan toegevoegd worden voor de afgevallen genIDs'''
 
 def plot_familys(data_family, data_expression):  
     
@@ -222,13 +227,21 @@ def pie_chart(data_fam, data_clust):
             df.plot(kind='pie', subplots=True, title=f'Cluster: {cluster}', autopct='%.0f%%')
             plot += 1
     
-    return cluster_fam
+    return cluster_fam 
 
-lib_cluster_results = data_inlezen('kmca_results.txt')
-lib_beschrijvingen = data_inlezen('GenDescription2.txt')
-lib_expression = data_inlezen('Voorbeeld_clusterdata.txt')
-lib_family = data_inlezen('CloneIdFamily.txt')
-plot_clusters(lib_expression, lib_cluster_results)
-telwoorden = telwoorden(lib_cluster_results, lib_beschrijvingen, verwijderen, min_frequency, in_nr_clusters, min_length_substring)
-plot_familys(lib_family, lib_expression)
-pie_chart = pie_chart(lib_family,lib_cluster_results)   
+'''vrije interpretatie moet hier nog komen'''
+
+def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen):
+    lib_cluster_results = data_inlezen(f_clus_res)
+    lib_beschrijvingen = data_inlezen(f_desc)
+    lib_expression = data_inlezen(f_exprs)
+    lib_family = data_inlezen(f_fam)
+    plot_clusters(lib_expression, lib_cluster_results)
+    telwoorden(lib_cluster_results, lib_beschrijvingen, verwijderen, min_frequency, in_nr_clusters, min_length_substring)
+    plot_familys(lib_family, lib_expression)
+    pie_chart(lib_family,lib_cluster_results)   
+    
+
+
+
+main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen)
