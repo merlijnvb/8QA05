@@ -294,7 +294,7 @@ class KMCA:
                                                 --> Value = Sil_score/E_score
         Task of function: calculating which k gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different k
         '''
-        assert k_min < k_max, "k_min must be smaller than k_max. --> optimize(k_min,k_max) \n*If you only want to cluster the data for one value of k, call clustering()"
+        assert k_min <= k_max, "k_min must be smaller than or equal to k_max. --> optimize(k_min,k_max)"
         assert k_min >= 1, 'k_min must be 1 or higher. --> optimize(k_min)'
         assert (measure == 'Sil' or measure == 'E'), "Measure must either be 'Sil' or 'E'. --> optimize(measure)"
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
@@ -316,7 +316,6 @@ class KMCA:
             self.k = k
             results = {} # THIS DICTIONARY WILL KEEP TRACK OF THE RESULTS FOUND FOR EVERY DIFFERENT SEED
             for seed in seeds: # THE CURRENT VALUE FOR k MUST BE TESTED USING EVERY SEED FROM THE LIST seeds
-                print('k is ',k,'seed is ',seed)
                 self.clustering(data)
                 
                 if measure == 'Sil':
@@ -329,15 +328,14 @@ class KMCA:
                 else: # If not 'Sil', the measure is 'E' (see assert commands above)
                     self.Escore()
                     results[seed] = self.E_score
-                print(results)  
+
             if measure == 'Sil':
                 self.lib_silscores[k] = list(results.values())[np.argmax(list(results.values()))]
-                print(list(results.keys()),list(results.values()),' of which ',self.lib_silscores[k],' is best')
             else:
                 self.lib_Escores[k] = list(results.values())[np.argmin(list(results.values()))]
-                print(list(results.keys()),list(results.values()),' of which ',self.lib_Escores[k],' is best')
                     
-            print(f'{((k-k_min)/(k_max-k_min))*100}% ', end='\r') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
+            if k_min != k_max: # IF k_min IS EQUAL TO k_max, ONLY ONE VALUE FOR k IS TESTED. IN THAT CASE, THE PROGRESS BAR IS NOT NECESSARY.
+                print(f'{((k-k_min)/(k_max-k_min))*100}% ', end='\r') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
         
         if measure == 'Sil':
             self.k =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
@@ -356,9 +354,7 @@ lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
 lib_results = file_to_lib('Data\Voorbeeld_clusterresult.txt')
    
 kmca = KMCA(data=lib_data,seeds=[0,1])
-kmca_results = kmca.optimize(k_min=4,k_max=8,measure='E')
-print(kmca.lib_silscores, kmca.lib_Escores)
-print(kmca.k)
+kmca_results = kmca.optimize(k_min=8,k_max=8,measure='E')
 #kmca_scores = kmca.lib_silscores
 
 
