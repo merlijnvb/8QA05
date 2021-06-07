@@ -359,7 +359,7 @@ def main():
     rDict, Filterinfo = Daysdict(Dagen,r_filter)            # make one library for all r-values
     Filtered_rDict = filtering(rDict,Filterinfo)                     # filter the library based
     dict_to_txt(Filtered_rDict,"Filtered_clusterdata.txt","  ")      # make a file of filtered data for phase 2
-    dict_to_txt(rDict,"Unfiltered_clusterdata.txt","  ")    # make a file of filtered data for phase 3
+    dict_to_txt(rDict,".txt","  ")    # make a file of filtered data for phase 3
     if input("Would you like the plots of phase 1? \n"):    # ask whether the user would like to see the plots of phase 1 (boolean input)
         plot_phase1(Dagen,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
     
