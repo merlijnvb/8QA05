@@ -107,68 +107,79 @@ def plot_clusters(expression_data, results):
         ax[cluster-1].set_xlim(days[0],days[-1])
     
 def telwoorden(cluster_data, beschrijvingen_data, ruwe_data_fase, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen = True):
-    infile = open(ruwe_data_fase)
-    data = infile.readlines()
-    infile.close()
-    
-    afgevallen_IDs = []
-    for line in data:
-        if int(line.split()[0]) not in list(cluster_data.keys()):
-            afgevallen_IDs.append(int(line.split()[0]))
-    
-    afgevallen_desc = []
-    for ID in afgevallen_IDs:
-        afgevallen_desc.append(beschrijvingen_data[ID])
-    
+    if (in_nr_clusters <= 0) and (min_frequency > 0):
+        print(f'ERROR: in_nr_clusters moet een getal zijn groter dan 0, is nu: {in_nr_clusters}')
+        pass
+    elif (in_nr_clusters >= 0) and (min_frequency <= 0):
+        print(f'ERROR: min_frequency moet een getal zijn groter dan 0, is nu: {min_frequency}')
+        pass
+    elif (in_nr_clusters <= 0) and (min_frequency <= 0):
+        print(f'ERROR: min_frequency en in_nr_clusters moeten groter zijn  dan 0, \nmin_frequency is nu: {min_frequency} \nin_nr_cluster is nu: {in_nr_clusters}')
+        pass
+    else:
+        infile = open(ruwe_data_fase)
+        data = infile.readlines()
+        infile.close()
         
+        afgevallen_IDs = []
+        for line in data:
+            if int(line.split()[0]) not in list(cluster_data.keys()):
+                afgevallen_IDs.append(int(line.split()[0]))
         
-    cluster_description = {}
-    
-    for i in range(min(cluster_data.values()),max(cluster_data.values())+1):
-        cluster_description[i] = list()                                       # maakt een lijst van de waardes in de range
-       
-    for ID in cluster_data:
-        cluster_description[cluster_data[ID]].append(beschrijvingen_data[ID])             # voegt beschrijvingen toe in de lijst in de dictionary
-    clusters = list(cluster_description.keys())                                            # maakt lijst van keys in cluster_discription
-    descriptions = list(cluster_description.values())                                      # maakt lijst van values in cluster_discription
-    lib_substrings = {}                                                     # maakt nieuwe lege dictionary
-    '''het volgende stuk (tot de witregel) plaatst alle eerste (of tweede als
-    het eerste woord geen woord is, maar één enkele letter/cijfer) woorden als
-    key in de dictionary lib_substring'''
-    if (in_nr_clusters == 1) & alleen_afgevallen:
-        clusters = [-1]
-    
-    for clust in clusters:
-        data_to_check = descriptions[clusters.index(clust)]                                 
-        for desc in data_to_check:
-            desc = desc.replace('(', '')
-            desc = desc.replace(')', '')
-            desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden op de caracters die voor, na en tussen | staan
+        afgevallen_desc = []
+        for ID in afgevallen_IDs:
+            afgevallen_desc.append(beschrijvingen_data[ID])
+        
             
-            for bes in desc_to_check:
-                if (len(bes) > 3) & (bes not in verwijderen):
-                    substring = bes
-                    lib_substrings[substring] = ''                      #maakt een key van de substrings
-    for substring in lib_substrings:
-        substring_in_clusters = {}   # maakt nieuwe lege dictionary
+            
+        cluster_description = {}
+        
+        for i in range(min(cluster_data.values()),max(cluster_data.values())+1):
+            cluster_description[i] = list()                                       # maakt een lijst van de waardes in de range
+           
+        for ID in cluster_data:
+            cluster_description[cluster_data[ID]].append(beschrijvingen_data[ID])             # voegt beschrijvingen toe in de lijst in de dictionary
+        clusters = list(cluster_description.keys())                                            # maakt lijst van keys in cluster_discription
+        descriptions = list(cluster_description.values())                                      # maakt lijst van values in cluster_discription
+        lib_substrings = {}                                                     # maakt nieuwe lege dictionary
+        '''het volgende stuk (tot de witregel) plaatst alle eerste (of tweede als
+        het eerste woord geen woord is, maar één enkele letter/cijfer) woorden als
+        key in de dictionary lib_substring'''
+        if (in_nr_clusters == 1) & alleen_afgevallen:
+            clusters = [-1]
+        
         for clust in clusters:
-            data_to_check_in = descriptions[clust-1]               
-            length_substring = len(substring)                    # bepaald lengte substring
-            frequency = sum((element[ind:ind+length_substring]).lower() == substring.lower() for element in data_to_check_in for ind,char in enumerate(element))  # telt hoe vaak substrings voorkomen
-            if frequency >= min_frequency:                  #kijkt of een substring minimaal het aantal keer voorkomt als dat we willen
-                substring_in_clusters[clust] = frequency    #als de minimale frequency is overschreden, wordt die toegevoegd
-        if len(substring_in_clusters.keys()) == in_nr_clusters:     #checkt of de substring in het aantal clusters voorkomt dat je wilt
-            lib_substrings[substring] = substring_in_clusters
-
-    keys_to_delete_1 = []                                     # maakt lege lijst om keys te verwijderen    
-
-    for key in lib_substrings:
-        if (lib_substrings[key] == "") | (len(key) < min_length_substring):
-            keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
-
-    for key in keys_to_delete_1:
-        lib_substrings.pop(key)                                     #de keys die verwijderd moeten worden worden gepopt
-    return lib_substrings
+            data_to_check = descriptions[clusters.index(clust)]                                 
+            for desc in data_to_check:
+                desc = desc.replace('(', '')
+                desc = desc.replace(')', '')
+                desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden op de caracters die voor, na en tussen | staan
+                
+                for bes in desc_to_check:
+                    if (len(bes) > 3) & (bes not in verwijderen):
+                        substring = bes
+                        lib_substrings[substring] = ''                      #maakt een key van de substrings
+        for substring in lib_substrings:
+            substring_in_clusters = {}   # maakt nieuwe lege dictionary
+            for clust in clusters:
+                data_to_check_in = descriptions[clust-1]               
+                length_substring = len(substring)                    # bepaald lengte substring
+                frequency = sum((element[ind:ind+length_substring]).lower() == substring.lower() for element in data_to_check_in for ind,char in enumerate(element))  # telt hoe vaak substrings voorkomen
+                if frequency >= min_frequency:                  #kijkt of een substring minimaal het aantal keer voorkomt als dat we willen
+                    substring_in_clusters[clust] = frequency    #als de minimale frequency is overschreden, wordt die toegevoegd
+            if len(substring_in_clusters.keys()) == in_nr_clusters:     #checkt of de substring in het aantal clusters voorkomt dat je wilt
+                lib_substrings[substring] = substring_in_clusters
+    
+        keys_to_delete_1 = []                                     # maakt lege lijst om keys te verwijderen    
+    
+        for key in lib_substrings:
+            if (lib_substrings[key] == "") | (len(key) < min_length_substring):
+                keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
+    
+        for key in keys_to_delete_1:
+            lib_substrings.pop(key)                                     #de keys die verwijderd moeten worden worden gepopt
+        return lib_substrings
+    return 'error'
 
 def check_telwoorden(afgevallen_telwoorden, normal_telwoorden):
     sub_afgevallen = list(afgevallen_telwoorden.keys())
@@ -258,15 +269,38 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
     lib_cluster_results = data_inlezen(f_clus_res)
     lib_beschrijvingen = data_inlezen(f_desc)
     lib_expression = data_inlezen(f_exprs)
-    lib_family = data_inlezen(f_fam)
-    plot_clusters(lib_expression, lib_cluster_results)
-    afgevallen = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=True)
-    normal = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
-    if input('Wil je weten welke beschrijvingen vrijwel alleen voorkomen in niet geclusterde genen? [y]/n? \n') == 'y':
-        print(check_telwoorden(afgevallen, normal))
-    empty_familys = plot_familys(lib_family, lib_expression)
-    pie_chart(lib_family,lib_cluster_results)   
     
-    return empty_familys
+    if input('Wil je weten hoe de genen over de clusters verdeeld zijn? [y]/n \n') == 'y':
+        plot_clusters(lib_expression, lib_cluster_results)
+   
+    in_nr_clusters = input(f'Wat is het aantal clusters dat je wilt checken voor overeenkomende beschrijvingen? \nKies een getal > 0 & <= {max(list(lib_cluster_results.values()))} \nals je dit niet wilt checken: n \n')
+    if in_nr_clusters != "n":
+        in_nr_clusters = int(in_nr_clusters)   
+        telwoorden_res = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
+        if telwoorden_res != 'error':
+            print(telwoorden_res)
+        else:
+            return
+    
+    if input('Wil je weten welke beschrijvingen vrijwel alleen voorkomen in niet geclusterde genen? [y]/n? \n') == 'y':
+        afgevallen = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=True)
+        normal = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
+        print(f'de beschrijvingen die vrijwel alleen voorkomen in de niet geclusterde genen zijn: {check_telwoorden(afgevallen, normal)}')
+   
+    if input('Wil je weten hoe de families over de clusters verdeeld zijn? [y]/n? \n') == 'y':
+        lib_family = data_inlezen(f_fam)
 
+        if input('Wil je de verdeling zien via een lijnplots? [y]/n \n')=='y':
+            empty_familys = plot_familys(lib_family, lib_expression)
+            print(f'De volgende families zijn niet ingedeeld in clusters: {empty_familys}')
+            
+            if input('Wil je ook zien hoe de families over de clusters zijn verdeeld met behulp van pie-charts? [y]/n \n') =='y':
+                empty_familys = pie_chart(lib_family, lib_cluster_results)
+
+            
+        elif input('Wil je de verdeling zien via pie-charts? [y]/n \n')=='y':
+            empty_familys = pie_chart(lib_family, lib_cluster_results)
+    
+    
+            
 empty_familys = main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen)
