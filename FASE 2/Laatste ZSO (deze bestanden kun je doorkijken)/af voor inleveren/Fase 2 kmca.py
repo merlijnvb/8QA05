@@ -40,14 +40,14 @@ def file_to_lib(FileName):
 class KMCA:
     def __init__(self, k=6, seeds=[], data={}, normalize=True):
         '''
-        Preconditions:  k (#nr of clusters), seed (#nr linked to the randomness), data (dictionary)
+        Preconditions:  k (nr of clusters), seed (nr linked to the randomness), data (dictionary)
         Postconditions: save every datafield with the corresponding values:
-                        --> self.k = #nr of clusters (k) .
+                        --> self.k = nr of clusters (k) .
                         --> self.seed = a list of all seeds to use for choosing random indexes for initial clustering.
                         --> self.bool_normalized = boolean to check if the data is already normalized.
-                        --> self.bool_want_normalized = boolean to check if user wants to normilize.
+                        --> self.bool_want_normalized = boolean to check if user wants to normalize.
                         --> self.lib_[...] = empty dictionary that is filled later.
-                            --> lib_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
+                            --> lib_data can be an empty dictionary or can be filled from the beginning. This choice is up to the user.
                         --> self.E_score = set to infinity, because if we don't cluster the data in the first iteration the E_score is not representative.
                         --> self.Sil_score = set to 0, because if we don't cluster the data in the first iteration the Sil_score is not representative.
                         --> self.lib_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
@@ -79,8 +79,8 @@ class KMCA:
         '''
         
         for index in data_unnorm:
-            magnitude = np.sqrt(np.sum(np.square(np.array(data_unnorm[index]).astype(float)))) ## SET DATA TYPE TO FLOAT --> THEN CALCULATE THE LENGTH OF THE VECTOR BY APPLYING THE FORMULA IN THE CASUS
-            self.lib_data[index] = np.divide(np.array(data_unnorm[index]).astype(float), magnitude) ## DIVIDE EACH VALUE IN THE CORDINATES BY THE LENGTH OF THE VECTOR
+            magnitude = np.sqrt(np.sum(np.square(np.array(data_unnorm[index]).astype(float)))) # SET DATA TYPE TO FLOAT --> THEN CALCULATE THE LENGTH OF THE VECTOR BY APPLYING THE FORMULA IN THE CASUS
+            self.lib_data[index] = np.divide(np.array(data_unnorm[index]).astype(float), magnitude) # DIVIDE EACH VALUE IN THE CORDINATES BY THE LENGTH OF THE VECTOR
         
         self.bool_normalized = True
         
@@ -92,18 +92,18 @@ class KMCA:
         '''
         Preconditions: seed is an integer (the seed number to be used by the numpy.random module)
         Postconditions: A dictionary:
-                        --> Key = Cluster #nr
+                        --> Key = Cluster nr
                         --> Value = list of protein ID's that are assigned to that cluster
         Task of function: assigning proteins to a random cluster
         '''
         
-        # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
+        # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
         assert self.lib_data != {},"No data given. --> call function clustering(data) or __init__(data) or normalize(data)" # CHECKING IF LIB_DATA IS EMPTY
         
         np.random.seed(seed)
         
         randnr = np.random.randint(0,self.k,len(self.lib_data))
-        labels = randnr#np.random.randint(0,self.k,len(self.lib_data))
+        labels = randnr # np.random.randint(0,self.k,len(self.lib_data))
         lib_labeled = {}
         
         for i in range(len(self.lib_data)):
@@ -119,9 +119,9 @@ class KMCA:
     def centroid(self):
         '''
         Postconditions: A dictionary:
-                        --> Key = Cluster #nr
-                        --> Value = list containing the mean cordinate for every axis (list has the length of the #nr of dimensions the input has)
-        Task of function: calculating the mean cordinate of every cluster (=centroid/centrum of every cluster)
+                        --> Key = Cluster nr
+                        --> Value = list containing the mean coordinate for every axis (list has the length of the nr of dimensions the input has)
+        Task of function: calculating the mean coordinate of every cluster (=centroid/centrum of every cluster)
         '''
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
@@ -132,7 +132,7 @@ class KMCA:
         if (self.lib_clustered == {}) & (self.lib_data != {}): # CHECKING IF LIB_CLUSTERED IS EMPTY BUT LIB_DATA IS GIVEN
             raise ImportError("No lib_clustered known. --> call function cluster0()")
             
-        for k in self.lib_clustered: # CALCULATE FOR EVERY CLUSTER THE MEAN CORDINATE (=CENTROID)
+        for k in self.lib_clustered: # CALCULATE FOR EVERY CLUSTER THE MEAN COORDINATE (=CENTROID)
             self.lib_centroid[k] = np.mean(np.array([self.lib_data[index] for index in self.lib_clustered[k]]), axis=0) 
             
         return self.lib_centroid
@@ -141,11 +141,11 @@ class KMCA:
     
     def Escore(self):
         '''
-        Postconditions: E_score => score how good the k-means clustering fit is
-        Task of function: calculation the goodness of the k-means clustering application of certain centroids
+        Postconditions: E_score => score on the quality of fit of k-means clustering
+        Task of function: calculation of the quality of the k-means clustering application of certain centroids
         '''
         
-        # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
+        # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTS LARGER ERRORS
         if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
             if self.lib_centroid == {}: # CHECKING IF LIB_CENTROID IS EMPTY
@@ -155,7 +155,7 @@ class KMCA:
             
         summation = 0
     
-        for k in range(self.k): # CALCULATE FOR EVERY CLUSTER THE E_SCORE
+        for k in range(self.k): # CALCULATE THE E_SCORE FOR EVERY CLUSTER
             summation += np.sum([np.square(abs(np.subtract(self.lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
             
         # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE K-MEANS FIT
@@ -168,9 +168,9 @@ class KMCA:
     
     def silhouette_score(self):
         '''
-        Postconditions: silhouette_score => score how good the k-means clustering fit is
+        Postconditions: silhouette_score => score on the quality of fit of the k-means clustering fit
         Task of function: calculating a score using a better scoring system with more indicative score values:
-            --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched to its neighbouring cluster.
+            --> A small internal dissimilarity value means it is well matched. Furthermore, a large external dissimilarity value means it is badly matched with its neighbouring cluster.
             
             --> Therefor if silhouette_score is closer to -1     ==>     datapoint would be better assigned to another cluster
             --> Therefor if silhouette_score is closer to  1     ==>     datapoint is appropriatly assigned to cluster
@@ -179,10 +179,10 @@ class KMCA:
         list_scores = []
         
         for index in self.lib_data:
-            # GET THE CLUSTER #NR WHICH THE PROTEIN IS ASSIGNED TO
-            cluster_nr = [cluster for cluster, indices in self.lib_clustered.items() if index in indices] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            # GET THE CLUSTER NR WHICH THE PROTEIN IS ASSIGNED TO
+            cluster_nr = [cluster for cluster, indices in self.lib_clustered.items() if index in indices] # GET CLUSTER NR THE PROTEIN IS ASSIGNED TO
 
-            #CHECK IF THE PROTEIN IS ASSIGNED TO A CLUSTER
+            # CHECK IF THE PROTEIN IS ASSIGNED TO A CLUSTER
             if cluster_nr != []:
                 cluster_nr = cluster_nr[0]
             
@@ -213,7 +213,7 @@ class KMCA:
     def assign_cluster(self):
         '''
         Postconditions: A dictionary:
-                        --> Key = Cluster #nr
+                        --> Key = Cluster nr
                         --> Value = list of protein ID's that are assigned to the closest centroid
         Task of function: assigning proteins to the cluster/centroid which is closest to the protein
         '''
@@ -229,7 +229,7 @@ class KMCA:
         self.lib_clustered = {k:[] for k in range(self.k)} # EMPTY THE CLUSTERED LIBRARY
         
         for index in self.lib_data: # LOOP OVER EVERY PROTEIN IN THE SELF.LIB_DATA
-            # CALCULATE THE DISTANCE FROM THE PROTEIN TO EVERY CENTROID (CLUSTER) AND PICK THE CENTROID WHICH IS CLOSEST TO THE PROTEIN
+            # CALCULATE THE DISTANCE FROM THE PROTEIN TO EVERY CENTROID (CLUSTER) AND PICK THE CENTROID CLOSEST TO THE PROTEIN
             cluster = np.argmin([np.sqrt(np.sum(np.square(np.subtract(self.lib_centroid[k],self.lib_data[index])))) for k in range(self.k)])
             # APPEND THE CLUSTER LIST IN THE LIBRARY WITH THE CORRESPONDING PROTEIN ID
             self.lib_clustered[cluster].append(index)
@@ -245,9 +245,9 @@ class KMCA:
                             --> Value = list of floats
                         seeds: a list of integers (the seed numbers to be used by the numpy.random module)
         Postconditions: A dictionary:
-                        --> Key = cluster #nr
-                        --> Value = list of protein ID's that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
-        Task of function: assigning proteins to the best cluster by updating the centroids a few iterations until the E_score is in its maximum
+                        --> Key = cluster nr
+                        --> Value = list of protein ID's that are assigned to that cluster when the E_score (the goodness of the fit) is in its minimum
+        Task of function: assigning proteins to the best cluster by updating the centroids a few iterations until the E_score is in its minimum
         '''
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
@@ -266,7 +266,7 @@ class KMCA:
         self.E_score = self.Escore()
         
         optimized = False
-        while optimized == False: # KEEP CALCULATING NEW CENTROIDS AND THEREFORE NEW CLUSTERS UNTIL THE E_SCORE IS AT ITS MAXIMUM
+        while optimized == False: # KEEP CALCULATING NEW CENTROIDS AND THEREFORE NEW CLUSTERS UNTIL THE E_SCORE IS AT ITS MINIMUM
             self.lib_clustered = self.assign_cluster()
             self.lib_centroid = self.centroid()
             E_score_new = self.Escore()
@@ -287,7 +287,7 @@ class KMCA:
                         k_min, k_max: range in which parameter k can be varied (lowest = k_min, highest = k_max)
                         measure: measure by which to evaluate how well the clustering fits (either 'E' for E-score or 'Sil' for silhouette score)
         Postconditions: lib_clustered: a dictionary:
-                                    --> Key = Cluster #nr
+                                    --> Key = Cluster nr
                                     --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
                         lib_Silscores/lib_Escores: a dictionary:
                                                 --> Key = k
@@ -309,7 +309,7 @@ class KMCA:
             if self.seeds != []:
                 seeds = self.seeds # IF THE LIST OF SEEDS IS NOT EXPLICITLY GIVEN TO THIS FUNCTION BUT ASSIGNED TO 'self.seeds' AT __init__, USE THE LIST self.seeds
             else:
-                seeds = [None] # IF NO SEEDS ARE GIVEN TO THIS FUNCTION AND NONE WERE GIVEN AT self.seed, NO SEED SHOUL BE USED AT ALL (SO seeds MUST BE A LIST CONTAINING None AS ITS ONLY VALUE)
+                seeds = [None] # IF NO SEEDS ARE GIVEN TO THIS FUNCTION AND NONE WERE GIVEN AT self.seed, NO SEED SHOULD BE USED AT ALL (SO seeds MUST BE A LIST CONTAINING None AS ITS ONLY VALUE)
         assert all([type(i)==int for i in seeds]),"The list 'seeds' may only contain integers as its values. --> optimize(seeds)"
         
         for k in range(k_min, k_max+1): # LOOP OVER THE RANGE OF k'S THAT IS GIVEN
