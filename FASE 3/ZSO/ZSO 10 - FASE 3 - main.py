@@ -106,24 +106,40 @@ def plot_clusters(expression_data, results):
         ax[cluster-1].set_xticks(days)
         ax[cluster-1].set_xlim(days[0],days[-1])
     
-def telwoorden(cluster_data, beschrijvingen_data, verwijderen, min_frequency, in_nr_clusters, min_length_substring):
+def telwoorden(cluster_data, beschrijvingen_data, ruwe_data_fase, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen = True):
+    infile = open(ruwe_data_fase)
+    data = infile.readlines()
+    infile.close()
+    
+    afgevallen_IDs = []
+    for line in data:
+        if int(line.split()[0]) not in list(cluster_data.keys()):
+            afgevallen_IDs.append(int(line.split()[0]))
+    
+    afgevallen_desc = []
+    for ID in afgevallen_IDs:
+        afgevallen_desc.append(beschrijvingen_data[ID])
+    
+        
+        
     cluster_description = {}
     
     for i in range(min(cluster_data.values()),max(cluster_data.values())+1):
         cluster_description[i] = list()                                       # maakt een lijst van de waardes in de range
-        
+       
     for ID in cluster_data:
         cluster_description[cluster_data[ID]].append(beschrijvingen_data[ID])             # voegt beschrijvingen toe in de lijst in de dictionary
-    
     clusters = list(cluster_description.keys())                                            # maakt lijst van keys in cluster_discription
     descriptions = list(cluster_description.values())                                      # maakt lijst van values in cluster_discription
     lib_substrings = {}                                                     # maakt nieuwe lege dictionary
-
     '''het volgende stuk (tot de witregel) plaatst alle eerste (of tweede als
     het eerste woord geen woord is, maar één enkele letter/cijfer) woorden als
     key in de dictionary lib_substring'''
+    if (in_nr_clusters == 1) & alleen_afgevallen:
+        clusters = [-1]
+    
     for clust in clusters:
-        data_to_check = descriptions[clust-1]                                 
+        data_to_check = descriptions[clusters.index(clust)]                                 
         for desc in data_to_check:
             desc = desc.replace('(', '')
             desc = desc.replace(')', '')
@@ -133,7 +149,6 @@ def telwoorden(cluster_data, beschrijvingen_data, verwijderen, min_frequency, in
                 if (len(bes) > 3) & (bes not in verwijderen):
                     substring = bes
                     lib_substrings[substring] = ''                      #maakt een key van de substrings
-            
     for substring in lib_substrings:
         substring_in_clusters = {}   # maakt nieuwe lege dictionary
         for clust in clusters:
@@ -153,9 +168,16 @@ def telwoorden(cluster_data, beschrijvingen_data, verwijderen, min_frequency, in
 
     for key in keys_to_delete_1:
         lib_substrings.pop(key)                                     #de keys die verwijderd moeten worden worden gepopt
-
     return lib_substrings
-'''hier moet nog aan toegevoegd worden voor de afgevallen genIDs'''
+
+def check_telwoorden(afgevallen_telwoorden, normal_telwoorden):
+    sub_afgevallen = list(afgevallen_telwoorden.keys())
+    sub_norm = list(normal_telwoorden.keys())
+    for sub in sub_afgevallen:
+        if sub in sub_norm:
+            afgevallen_telwoorden.pop(sub)
+    
+    return list(afgevallen_telwoorden.keys())
 
 def plot_familys(data_family, data_expression):  
     
@@ -238,11 +260,13 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
     lib_expression = data_inlezen(f_exprs)
     lib_family = data_inlezen(f_fam)
     plot_clusters(lib_expression, lib_cluster_results)
-    telwoorden(lib_cluster_results, lib_beschrijvingen, verwijderen, min_frequency, in_nr_clusters, min_length_substring)
+    afgevallen = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=True)
+    normal = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
+    if input('Wil je weten welke beschrijvingen vrijwel alleen voorkomen in niet geclusterde genen? [y]/n? \n') == 'y':
+        print(check_telwoorden(afgevallen, normal))
     empty_familys = plot_familys(lib_family, lib_expression)
     pie_chart(lib_family,lib_cluster_results)   
     
-
     return empty_familys
 
 empty_familys = main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen)
