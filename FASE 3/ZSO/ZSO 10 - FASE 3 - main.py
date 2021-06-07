@@ -39,15 +39,15 @@ def data_inlezen(filename):
         lib_data = {}                       # maakt nieuwe dictionary aan
         
         
-        line = inlines_GD[: indices[0]]       # elke lijn is het cloneID met zijn beschrijving
+        line = inlines_GD[:indices[0]]       # elke lijn is het cloneID met zijn beschrijving
         cloneID = int(line[0])                              # geeft cloneID als integer
         
         beschrijving = ""
         for word in range(1, len(line[1:])+1):   
-            beschrijving += line[word] + ' '                                    # voegt woord van beschrijving toe aan lijst beschrijving
+            beschrijving += line[word] + ' '            # voegt woord van beschrijving toe aan lijst beschrijving
     
         
-        lib_data[cloneID] = beschrijving                              # beschrijving wordt key in dictionary
+        lib_data[cloneID] = beschrijving                # beschrijving wordt key in dictionary
         
         for i in range(1,len(indices)):   
             line = inlines_GD[indices[i-1]+1: indices[i]]       # elke lijn is het cloneID met zijn beschrijving
@@ -75,19 +75,19 @@ def data_inlezen(filename):
     return lib_data
 
 def plot_clusters(expression_data, results):    
-    df_data = pd.DataFrame(expression_data)
+    df_data = pd.DataFrame(expression_data)         #create a dataframe from the expression data
     days = [1,2,4,7,14,21,45,90] # --> moet geimporteerd worden
-    new_cols = {i:days[i] for i in df_data.index}
-    df_data = df_data.transpose().rename(columns=new_cols)  
+    new_cols = {i:days[i] for i in df_data.index}  #dictionary voor de dagen die horen bij de data punten
+    df_data = df_data.transpose().rename(columns=new_cols)  #transpose the dataframe, and put the days as column names
     
-    gen_IDs = list(df_data.index.values)
-    id_with_cluster = {}
-    for ID in gen_IDs:
-        id_with_cluster[ID] = results[ID]
-    df_data['cluster'] = id_with_cluster.values()
-    max_cluster = np.unique(list(id_with_cluster.values())).max()
+    gen_IDs = list(df_data.index.values)            #lijst van alle gen ID's in het dataframe   
+    id_with_cluster = {}                            
+    for ID in gen_IDs:                          
+        id_with_cluster[ID] = int(results[ID])           #library met gen ID als key en het cluster nummer als value 
+    df_data['cluster'] = id_with_cluster.values()   #een nieuwe column toevoegen, die voor elk gen het cluster nummer weer geeft. 
+    max_cluster = np.unique(list(id_with_cluster.values())).max() #het grootste cluster nummer opslaan
 
-    df_grouped = df_data.groupby('cluster')
+    df_grouped = df_data.groupby('cluster')     #groepeer dataframe bij cluster nummer
     lower_bound = df_grouped.quantile(q=0.25) # maak eventueel variabel als dit nodig is
     higher_bound = df_grouped.quantile(q=0.75) # maak eventueel variabel als dit nodig is
     middle_bound = df_grouped.quantile(q=0.5) # maak eventueel variabel als dit nodig is
@@ -127,33 +127,32 @@ def telwoorden(cluster_data, beschrijvingen_data, verwijderen, min_frequency, in
         for desc in data_to_check:
             desc = desc.replace('(', '')
             desc = desc.replace(')', '')
-            desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden
+            desc_to_check = re.split(', |_|!| ', desc)                    # splitst de woorden op de caracters die voor, na en tussen | staan
             
             for bes in desc_to_check:
                 if (len(bes) > 3) & (bes not in verwijderen):
                     substring = bes
-                    lib_substrings[substring] = ''
+                    lib_substrings[substring] = ''                      #maakt een key van de substrings
             
     for substring in lib_substrings:
         substring_in_clusters = {}   # maakt nieuwe lege dictionary
         for clust in clusters:
             data_to_check_in = descriptions[clust-1]               
             length_substring = len(substring)                    # bepaald lengte substring
-            frequency = sum((element[ind:ind+length_substring]).lower() == substring.lower() for element in data_to_check_in for ind,char in enumerate(element)) 
-            # telt hoe vaak substrings voorkomen
-            if frequency >= min_frequency:
-                substring_in_clusters[clust] = frequency
-        if len(substring_in_clusters.keys()) == in_nr_clusters:
+            frequency = sum((element[ind:ind+length_substring]).lower() == substring.lower() for element in data_to_check_in for ind,char in enumerate(element))  # telt hoe vaak substrings voorkomen
+            if frequency >= min_frequency:                  #kijkt of een substring minimaal het aantal keer voorkomt als dat we willen
+                substring_in_clusters[clust] = frequency    #als de minimale frequency is overschreden, wordt die toegevoegd
+        if len(substring_in_clusters.keys()) == in_nr_clusters:     #checkt of de substring in het aantal clusters voorkomt dat je wilt
             lib_substrings[substring] = substring_in_clusters
 
-    keys_to_delete_1 = []                                            # maakt lege lijst om keys te verwijderen    
+    keys_to_delete_1 = []                                     # maakt lege lijst om keys te verwijderen    
 
     for key in lib_substrings:
         if (lib_substrings[key] == "") | (len(key) < min_length_substring):
             keys_to_delete_1.append(key)                            # voegt key toe die verwijdert moet worden aan lijst
 
     for key in keys_to_delete_1:
-        lib_substrings.pop(key)
+        lib_substrings.pop(key)                                     #de keys die verwijderd moeten worden worden gepopt
 
     return lib_substrings
 '''hier moet nog aan toegevoegd worden voor de afgevallen genIDs'''
@@ -163,17 +162,17 @@ def plot_familys(data_family, data_expression):
     ID_expr_fam = {}
 
     for ID in data_family:
-        if ID in data_expression.keys():
+        if ID in data_expression.keys():                #als het ID in de expressie data zit dan wordt die gebruikt
             expression = data_expression[ID]
             expression.append(int(data_family[ID]))
-            ID_expr_fam[ID] = expression
+            ID_expr_fam[ID] = expression                #ID als key en de expressiewaardes voor dat ID als value
 
-    df_data = pd.DataFrame(ID_expr_fam)
+    df_data = pd.DataFrame(ID_expr_fam)                 #dataframe maken van de library
     days = [1,2,4,7,14,21,45,90, 'family'] # --> moet geimporteerd worden
-    new_cols = {i:days[i] for i in df_data.index}
-    days.pop()
-    df_data = df_data.transpose().rename(columns=new_cols).astype(float)
-    nr_familys = int(df_data['family'].max())
+    new_cols = {i:days[i] for i in df_data.index}       #dictionary voor de dagen die horen bij de data punten 
+    days.pop()                                          #pop 'family' van de lijst days
+    df_data = df_data.transpose().rename(columns=new_cols).astype(float)    #transpose dataframe en hernoem de colum naar de dagen
+    nr_familys = int(df_data['family'].max())           #
     
     df_grouped = df_data.groupby('family')
     lower_bound = df_grouped.quantile(q=0.25) # maak eventueel variabel als dit nodig is
@@ -184,10 +183,10 @@ def plot_familys(data_family, data_expression):
     plot_nr = 0
     
     for family in mean.index:
-        lower_bound.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=1)
-        middle_bound.loc[family].plot(ax=ax[plot_nr], alpha=0.5, linewidth=1)
-        higher_bound.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=1)
-        mean.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=3)
+        lower_bound.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=1)      #plotten
+        middle_bound.loc[family].plot(ax=ax[plot_nr], alpha=0.5, linewidth=1)   #plotten
+        higher_bound.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=1)     #plotten
+        mean.loc[family].plot(ax=ax[plot_nr], alpha=1, linewidth=3)             #plotten
         ax[plot_nr].legend(['q=0.25','q=0.5','q=0.75','mean'])
         if family == 0:
             family = mean.index[-1] + 1
@@ -196,35 +195,37 @@ def plot_familys(data_family, data_expression):
         ax[plot_nr].set_xlim(days[0],days[-1])
         plot_nr += 1
     
-    empty_familys = np.setdiff1d(list(range(1,nr_familys+1)), list(mean.index))
+    empty_familys = np.setdiff1d(list(range(1,nr_familys+1)), list(mean.index)) #save the empty familys as a list
+
+    return empty_familys
 
 def pie_chart(data_fam, data_clust):
     cluster_fam = {}
     cluster_fam_frequency = {}
     cluster = []
     for ID in data_clust:
-        cluster.append(data_clust[ID])
-    unique_clusters = np.unique(cluster)
+        cluster.append(data_clust[ID])      #append alle the clusters to a list
+    unique_clusters = np.unique(cluster)    #get a list of the clusters, without duplicates
     
     for cluster in unique_clusters:
-        cluster_fam_frequency[cluster] = []
+        cluster_fam_frequency[cluster] = []     #set all the clusters as key with empty list as values
     
     for ID in data_fam:
         if ID in data_clust:
-            cluster_fam_frequency[data_clust[ID]].append(data_fam[ID])
+            cluster_fam_frequency[data_clust[ID]].append(data_fam[ID])  #append the family number of the ID to the empty list in the right cluster
     
     for cluster in cluster_fam_frequency:
         frequency = {}
         for unique_fam in np.unique(cluster_fam_frequency[cluster]):
-            frequency[unique_fam] = cluster_fam_frequency[cluster].count(unique_fam)
-        cluster_fam[cluster] = frequency
+            frequency[unique_fam] = cluster_fam_frequency[cluster].count(unique_fam) #telt hoevaak family in dat cluster voorkomt, voegd dit toe (als value) aan lib, met als key het familie nummer
+        cluster_fam[cluster] = frequency        #library met cluster nummer als key, en een library, met de familie als key en frequentie als value, als value
     
     plot=0
     for cluster in cluster_fam:
         if cluster_fam[cluster] != {}:
-            df = pd.DataFrame(cluster_fam[cluster], index=list(range(len(list(cluster_fam[cluster]))))).head(1).transpose()
+            df = pd.DataFrame(cluster_fam[cluster], index=list(range(len(list(cluster_fam[cluster]))))).head(1).transpose() #create a dataframe with only 1 row
             df.rename(columns={0: cluster},inplace = True)
-            df.plot(kind='pie', subplots=True, title=f'Cluster: {cluster}', autopct='%.0f%%')
+            df.plot(kind='pie', subplots=True, title=f'Cluster: {cluster}', autopct='%.0f%%')       #plot the data as pie-chart
             plot += 1
     
     return cluster_fam 
@@ -238,10 +239,10 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
     lib_family = data_inlezen(f_fam)
     plot_clusters(lib_expression, lib_cluster_results)
     telwoorden(lib_cluster_results, lib_beschrijvingen, verwijderen, min_frequency, in_nr_clusters, min_length_substring)
-    plot_familys(lib_family, lib_expression)
+    empty_familys = plot_familys(lib_family, lib_expression)
     pie_chart(lib_family,lib_cluster_results)   
     
 
+    return empty_familys
 
-
-main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen)
+empty_familys = main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen)
