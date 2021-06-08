@@ -74,63 +74,63 @@ def readfile(filename):
     return ID_dict
 
 
-def normSig2_add(Dagen):
-    """Preconditions:  Dagen is een lijst van dictionaries met per ID de 
+def normSig2_add(Days):
+    """Preconditions:  Days is een lijst van dictionaries met per ID de 
                         bijbehorende waarden.
     Postconditions:    Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan
                         elke dictionary."""
-    for Dag in Dagen:
-        S1 = summation(Dag,"P1Sig") # optellen van alle P1Sig waardes
-        S2 = summation(Dag,"P2Sig") # optellen van alle P2Sig waardes
-        for key in Dag:
-            Dag[key].append(int(Dag[key][Columns.index("P2Sig")])*S1/S2)
+    for Day in Days:
+        S1 = summation(Day,"P1Sig") # optellen van alle P1Sig waardes
+        S2 = summation(Day,"P2Sig") # optellen van alle P2Sig waardes
+        for ID in Day:
+            Day[ID].append(int(Day[ID][Columns.index("P2Sig")])*S1/S2)
 
 
-def summation(Dag_dict,column_head):
-    """Preconditions:  Dag_dict is een dictionary met per ID de bijbehorende 
+def summation(Day,column_head):
+    """Preconditions:  Day is een dictionary met per ID de bijbehorende 
                         waarden en column head is de index van de kolom die
                         moet worden opgesomd.
     Postconditions:    Retourneert de som van alle waarden uit de kolom."""
     total = 0 # counter
     
-    for key in Dag_dict:
-        total += int(Dag_dict[key][Columns.index(column_head)])
+    for ID in Day:
+        total += int(Day[ID][Columns.index(column_head)])
         
     return total
 
 
-def Log_add(Dagen):
-    """Preconditions:  dagen is een lijst van dictionaries met per ID de 
+def Log_add(Days):
+    """Preconditions:  Days is een lijst van dictionaries met per ID de 
                         bijbehorende waarden.
     Postconditions:    Zet P1Sig, P2Sig en P2SigNorm in een logaritme en voegt 
-                        deze toe aan elke dictionary in Dagen."""
-    for Dag_dict in Dagen:
-        for key in Dag_dict:
-            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P1Sig")]))
-            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P2Sig")]))
-            Dag_dict[key].append(math.log10(Dag_dict[key][Columns.index("P2SigNorm")]))
+                        deze toe aan elke dictionary in Days."""
+    for Day in Days:
+        for ID in Day:
+            Day[ID].append(math.log10(Day[ID][Columns.index("P1Sig")]))
+            Day[ID].append(math.log10(Day[ID][Columns.index("P2Sig")]))
+            Day[ID].append(math.log10(Day[ID][Columns.index("P2SigNorm")]))
 
               
-def Classes(Dagen,frequences=False):
-    """Preconditions:  Dagen is een lijst van libraries, frequences is een 
+def Classes(Days,frequences=False):
+    """Preconditions:  Days is een lijst van libraries, frequences is een 
                         boolean die het printen aan kan zetten, per default uit.
     Postconditions:    Roept de funtie make_class aan per dag en print daarmee
                         de frequenties per dag en klasse als frequences==True"""
     classes = "ABCD"
     
-    for i in range(len(Dagen)):
-        counts = make_class(Dagen[i])
+    for i in range(len(Days)):
+        counts = make_class(Days[i])
         if frequences: # check whether we want the print output
             print("\nVoor dag",Day_numbers[i],"geldt: ")
             for j in range(len(counts)):
                 print("\tFrequentie van",classes[j],"is",counts[j]) 
 
 
-def make_class(Dag,stb_threshold=25):
-    """Preconditions:  Dag is een dictionary met per ID de bijbehorende 
+def make_class(Day,stb_threshold=25):
+    """Preconditions:  Day is een dictionary met per ID de bijbehorende 
                         waarden. stb_threshold is de drempelwaarde voor de 
                         filtering van de classes.
-    Postconditions:    Voegt aan elke waarde van Dag een klasse (A, B, C of D)
+    Postconditions:    Voegt aan elke waarde van Day een klasse (A, B, C of D)
                         toe op basis van de waarden van P1STB en P2STB. Voor
                         deze klassen geldt respectievelijk in vergelijking
                         met de drempelwaarde: Geen waarden lager, slechts P2 
@@ -139,43 +139,43 @@ def make_class(Dag,stb_threshold=25):
                         klassen"""
     counts = [0,0,0,0] # list of counters
     
-    for ID in Dag:
-        if (Dag[ID][Columns.index("P1STB")] >= stb_threshold):
-            if (Dag[ID][Columns.index("P2STB")] >= stb_threshold):
-                Dag[ID].append("A")
+    for ID in Day:
+        if (Day[ID][Columns.index("P1STB")] >= stb_threshold):
+            if (Day[ID][Columns.index("P2STB")] >= stb_threshold):
+                Day[ID].append("A")
                 counts[0]+=1
             else:
-                Dag[ID].append("B")
+                Day[ID].append("B")
                 counts[1]+=1
         else:
-            if (Dag[ID][Columns.index("P2STB")] >= stb_threshold):
-                Dag[ID].append("C")
+            if (Day[ID][Columns.index("P2STB")] >= stb_threshold):
+                Day[ID].append("C")
                 counts[2]+=1
             else:
-                Dag[ID].append("D")
+                Day[ID].append("D")
                 counts[3]+=1
                 
     return counts   
 
   
-def add_expression(Dagen):
-    """Preconditions:  Dagen is een lijst van libraries
-    Postconditions:    voegt de relatieve expressiewaarden toe aan elke Dag uit
-                        Dagen"""
+def add_expression(Days):
+    """Preconditions:  Days is een lijst van libraries
+    Postconditions:    voegt de relatieve expressiewaarden toe aan elke Day uit
+                        Days"""
     Columns.append("RelativeExpression")
-    for Dag in Dagen:
-        for ID in Dag:
-            if (Dag[ID][Columns.index("P1Sig")]/Dag[ID][Columns.index("P2SigNorm")]) >= 1:
-                r = (Dag[ID][Columns.index("P1Sig")]/Dag[ID][Columns.index("P2SigNorm")]) - 1
+    for Day in Days:
+        for ID in Day:
+            if (Day[ID][Columns.index("P1Sig")]/Day[ID][Columns.index("P2SigNorm")]) >= 1:
+                r = (Day[ID][Columns.index("P1Sig")]/Day[ID][Columns.index("P2SigNorm")]) - 1
             else:
-                r = (-Dag[ID][Columns.index("P2SigNorm")]/Dag[ID][Columns.index("P1Sig")]) + 1
-            Dag[ID].append(r)
+                r = (-Day[ID][Columns.index("P2SigNorm")]/Day[ID][Columns.index("P1Sig")]) + 1
+            Day[ID].append(r)
 
 
-def Daysdict(Dagen,r_filter=0.5):
-    """Preconditions:  Dagen is een lijst van libraries, r_filter is de  
+def Daysdict(Days,r_filter=0.5):
+    """Preconditions:  Days is een lijst van libraries, r_filter is de  
                         filtervoorwaarde voor de expressiewaarde r
-    Postconditions:    Voegt alle r-waarden van Dagen samen in één dictionary 
+    Postconditions:    Voegt alle r-waarden van Days samen in één dictionary 
                         en retourneert deze als eerste waarde. Houdt verder
                         bij van elk gen hoevaak deze elke belangrijke 
                         filtervoorwaarde overschrijdt, zodat hier later op 
@@ -184,21 +184,21 @@ def Daysdict(Dagen,r_filter=0.5):
                         in class D, spotgrootte buiten de range [40,160] en 
                         |r| kleiner dan r_filter."""
     # Dictionaries that will be filled
-    New_Dagen = {}
+    New_Days = {}
     Filterinfo = {}
     
-    for ID in Dagen[0]:
-        New_Dagen[ID] = [] # the list of R-values that will become the value in the dictionary
+    for ID in Days[0]:
+        New_Days[ID] = [] # the list of R-values that will become the value in the dictionary
         Filterinfo[ID] = [0,0,0,0]
         
         for i in range(len(Day_numbers)):
-            New_Dagen[ID].append(Dagen[i][ID][-1]) # de laatste positie van de lijst kan worden gebruikt, omdat r altijd achteraan moet staan
-            if -r_filter < Dagen[i][ID][-1] < r_filter: Filterinfo[ID][3] += 1 # telt hoe vaak |r| kleiner is dan de filterwaarde
-            if not ((Dagen[i][ID][Columns.index("P1Cov")] >= 40) and (Dagen[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
-            if (Dagen[i][ID][Columns.index("Class")] == "B") or (Dagen[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
-            if Dagen[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
+            New_Days[ID].append(Days[i][ID][-1]) # de laatste positie van de lijst kan worden gebruikt, omdat r altijd achteraan moet staan
+            if -r_filter < Days[i][ID][-1] < r_filter: Filterinfo[ID][3] += 1 # telt hoe vaak |r| kleiner is dan de filterwaarde
+            if not ((Days[i][ID][Columns.index("P1Cov")] >= 40) and (Days[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
+            if (Days[i][ID][Columns.index("Class")] == "B") or (Days[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
+            if Days[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
                 
-    return New_Dagen, Filterinfo
+    return New_Days, Filterinfo
 
     
 def filtering(rDict, Filterinfo):
@@ -243,20 +243,20 @@ def dict_to_txt(rDict,filename,parse):
     outfile.close()  
 
 
-def plot_phase1(Dagen,rDict,r_filter=0.5):
-    """Preconditions:  Dagen is een lijst van libraries
+def plot_phase1(Days,rDict,r_filter=0.5):
+    """Preconditions:  Days is een lijst van libraries
     Postconditions:    Roept alle mogelijkheden voor  
-                        plot_dagen aan."""   
+                        plot_Days aan."""   
     for log in [False,True]:
         for norm in [False,True]:
-            plot_dagen(Dagen,log,norm)
+            plot_Days(Days,log,norm)
             
     plot_hist(rDict) # to plot the histograms
     line_plots(rDict,r_filter) # to plot the line plots
     
 
-def plot_dagen(Dagen,log=False,Norm=False):
-    """Preconditions:  Dagen is een lijst van libraries, log en
+def plot_Days(Days,log=False,Norm=False):
+    """Preconditions:  Days is een lijst van libraries, log en
                         norm zijn booleans die aangeven of de 
                         functie logaritmisch, dan wel genormaliseerd
                         moet worden geplot.
@@ -280,29 +280,29 @@ def plot_dagen(Dagen,log=False,Norm=False):
     # start plotting
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
     fig.suptitle("Visualisatie data"+add_on,size=24,weight='bold')
-    for i in range(len(Dagen)):
-        ax_dag = ax[i%2,i//2] # in order to have the representation of the plots be plotted in 2 lines
-        ax_dag.set_title("Dag "+str(Day_numbers[i]))
-        df_dag = pd.DataFrame.from_dict(Dagen[i]).transpose() # making a dataframe of rDict for more efficiency in plotting
-        df_dag.columns = Columns
+    for i in range(len(Days)):
+        ax_day = ax[i%2,i//2] # in order to have the representation of the plots be plotted in 2 lines
+        ax_day.set_title("Day "+str(Day_numbers[i]))
+        df_day = pd.DataFrame.from_dict(Days[i]).transpose() # making a dataframe of rDict for more efficiency in plotting
+        df_day.columns = Columns
         # assign color to right class for plotting
-        df_dag = df_dag.replace({'Class': Colors})
+        df_day = df_day.replace({'Class': Colors})
         # plot every class per day; this ensures the legenda can be made
         for Class in Colors:
             # making a DataFrame for every class using a mask
-            df_dag_new = df_dag[df_dag['Class'] == Colors[Class]]
+            df_day_new = df_day[df_day['Class'] == Colors[Class]]
             # check whether we should use the logaritmic columns
             if log:
                 # plotting one class
-                df_dag_new.plot(kind='scatter',x=Columns[7],y=Columns[8+norm_fac],c=Colors[Class],ax=ax_dag,colorbar=False)
+                df_day_new.plot(kind='scatter',x=Columns[7],y=Columns[8+norm_fac],c=Colors[Class],ax=ax_day,colorbar=False)
                 # only plot P1 = P2 once, not four times
-                if Class == 'A': ax_dag.plot([1,5],[1,5],c="k")
+                if Class == 'A': ax_day.plot([1,5],[1,5],c="k")
             else: 
                 # only plot P1 = P2 once, not four times
-                if Class == 'A': ax_dag.plot([0,50000],[0,50000],c="k")
+                if Class == 'A': ax_day.plot([0,50000],[0,50000],c="k")
                 # plotting one class
-                df_dag_new.plot(kind='scatter',x=Columns[0],y=Columns[3+norm_fac],c=Colors[Class],ax=ax_dag,colorbar=False)
-            ax_dag.legend(['P1=P2',"A","B","C","D"])
+                df_day_new.plot(kind='scatter',x=Columns[0],y=Columns[3+norm_fac],c=Colors[Class],ax=ax_day,colorbar=False)
+            ax_day.legend(['P1=P2',"A","B","C","D"])
 
      
 def plot_hist(rDict):
@@ -315,10 +315,10 @@ def plot_hist(rDict):
     df = pd.DataFrame.from_dict(rDict).transpose() # making a dataframe of rDict for more efficiency in plotting
 
     for i in range(len(Day_numbers)):
-        ax_dag = ax[i%2,i//2]
-        ax_dag.set_title("Dag "+str(Day_numbers[i]))
-        ax_dag.set_xlim(-5, 5)
-        df[i].plot(kind='hist',ax=ax_dag)
+        ax_day = ax[i%2,i//2]
+        ax_day.set_title("Day "+str(Day_numbers[i]))
+        ax_day.set_xlim(-5, 5)
+        df[i].plot(kind='hist',ax=ax_day)
 
 
 def line_plots(rDict,r_filter,movement=256):
@@ -327,7 +327,7 @@ def line_plots(rDict,r_filter,movement=256):
                         uit rDict die moeten worden overgeslagen voor het 
                         plotten, opdat andere plots gezien kunnen worden.
     Postconditions:    Plot ncols**2 lijndiagrammen van genen, met op elke x-as
-                        de progressie van dagen en op elke y-as de expressie-
+                        de progressie van Days en op elke y-as de expressie-
                         waarde R. Plot tevens een lijn op y=r en y=-r om aan te 
                         geven waar de filtergrens zal liggen"""
     nr_of_plots = int(input("How many lineplots would you like? \n"))
@@ -340,8 +340,8 @@ def line_plots(rDict,r_filter,movement=256):
     fig.suptitle(str(nr_of_plots)+" genexpressiewaarden door de tijd met filtergrenzen",size=ncols*10,weight='bold') 
     
     df_expr = pd.DataFrame.from_dict(rDict) # making a dataframe of rDict for more efficiency in plotting
-    df_expr['Dagen'] = Day_numbers # adding the days in a column to make x-axis linear
-    df_expr.set_index("Dagen",inplace=True)
+    df_expr['Days'] = Day_numbers # adding the days in a column to make x-axis linear
+    df_expr.set_index("Days",inplace=True)
     for col in range(nrows): # looping through 
         for row in range(ncols):
             if  col*ncols+row < nr_of_plots: # in order to only plot the amount asked
@@ -357,16 +357,16 @@ def line_plots(rDict,r_filter,movement=256):
 def main(file_key_word):
     r_filter= 0.5                                           # to set the r_filter value
     outf_names = "Filtered_data.txt","Unfiltered_data.txt"
-    Dagen = find_files(file_key_word)                               # make list of dictionaries
-    normSig2_add(Dagen)                                     # normalise values
-    Log_add(Dagen)                                          # calculate the LOG of values for plotting
-    Classes(Dagen,frequences=True)                          # determine each values class
-    add_expression(Dagen)                                   # calculate the r-value for expression per value
-    rDict, Filterinfo = Daysdict(Dagen,r_filter)            # make one library for all r-values
+    Days = find_files(file_key_word)                               # make list of dictionaries
+    normSig2_add(Days)                                     # normalise values
+    Log_add(Days)                                          # calculate the LOG of values for plotting
+    Classes(Days,frequences=True)                          # determine each values class
+    add_expression(Days)                                   # calculate the r-value for expression per value
+    rDict, Filterinfo = Daysdict(Days,r_filter)            # make one library for all r-values
     Filtered_rDict = filtering(rDict,Filterinfo)                     # filter the library based
     dict_to_txt(Filtered_rDict,outf_names[0],"  ")      # make a file of filtered data for phase 2
     dict_to_txt(rDict,outf_names[1],"  ")    # make a file of filtered data for phase 3
     if input("Would you like the plots of phase 1? [y]/n \n") == "y":    # ask whether the user would like to see the plots of phase 1 (boolean input)
-        plot_phase1(Dagen,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
+        plot_phase1(Days,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
     
     return outf_names[0],outf_names[1]
