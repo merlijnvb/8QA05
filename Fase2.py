@@ -691,7 +691,8 @@ def return_txt_file(data, name, format_data):
         print(f'\nFunction: {name} --> These clusters are lost (size is below threshold): {anticlusters}')
     
 
-def main(filename):  
+def main(filename):
+     print(filename)
      # APPLY KMCA TO THE GIVEN DATASET:
      lib_data = file_to_lib(filename)
      
@@ -705,7 +706,7 @@ def main(filename):
          kmca_results = kmca.optimize(k_min=k_min, k_max=k_max, measure=measure, seeds=seeds)
          outfile_name = 'kmca_results.txt'
          return_txt_file(kmca_results, outfile_name, lib_data)
-         print('Clustering finished and optimized; The optimal number of clusters is',kmca.k)
+         print(f'\nClustering finished and optimized; The optimal number of clusters is {kmca.k}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {kmca.E_score}\nThe Silhouette score is {kmca.Sil_score}\n')
          
      else:
          subspace_min = int(input('Minimum number of subspaces (subspace_min): '))
@@ -716,8 +717,6 @@ def main(filename):
          gbca_results = gbca.optimize(subspace_min=subspace_min, subspace_max=subspace_max, measure=measure)
          outfile_name = 'gbca_results.txt'
          return_txt_file(gbca_results, outfile_name, lib_data)
-         print('Clustering finished and optimized; The optimal number of subspaces is',gbca.subspaces,)
+         print(f'\nClustering finished and optimized; The optimal number of subspaces is {gbca.subspaces}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {gbca.E_score}\nThe Silhouette score is {gbca.Sil_score}\n')
+         
      return outfile_name
- 
-main('Data\Voorbeeld_clusterdata.txt')
-
