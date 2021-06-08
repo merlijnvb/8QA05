@@ -121,9 +121,9 @@ def Classes(Days,frequences=False):
     for i in range(len(Days)):
         counts = make_class(Days[i])
         if frequences: # check whether we want the print output
-            print("\nFor day",Day_numbers[i],"geldt: ")
+            print("\nFor day",Day_numbers[i],"apply: ")
             for j in range(len(counts)):
-                print("\tFrequentie van",classes[j],"is",counts[j]) 
+                print("\tFrequency of",classes[j],"is",counts[j]) 
 
 
 def make_class(Day,stb_threshold=25):
@@ -192,11 +192,11 @@ def Daysdict(Days,r_filter=0.5):
         Filterinfo[ID] = [0,0,0,0]
         
         for i in range(len(Day_numbers)):
-            New_Days[ID].append(Days[i][ID][-1]) # de laatste positie van de lijst kan worden gebruikt, omdat r altijd achteraan moet staan
-            if -r_filter < Days[i][ID][-1] < r_filter: Filterinfo[ID][3] += 1 # telt hoe vaak |r| kleiner is dan de filterwaarde
-            if not ((Days[i][ID][Columns.index("P1Cov")] >= 40) and (Days[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # telt hoe vaak de spotgrootte buiten de (arbitraire) waarden valt
-            if (Days[i][ID][Columns.index("Class")] == "B") or (Days[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # telt hoe vaak een gen in B of C zit
-            if Days[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # telt hoe vaak een gen in D zit            
+            New_Days[ID].append(Days[i][ID][-1]) # the last position in the list can be used, because it's always the r-value
+            if -r_filter < Days[i][ID][-1] < r_filter: Filterinfo[ID][3] += 1 # counts how often |r| is smaller than the filtervalue 
+            if not ((Days[i][ID][Columns.index("P1Cov")] >= 40) and (Days[i][ID][2] <= 160)): Filterinfo[ID][2] += 1 # counts how often the spotsize is outside the (arbitrairy) values
+            if (Days[i][ID][Columns.index("Class")] == "B") or (Days[i][ID][Columns.index("Class")] == "C"): Filterinfo[ID][0] += 1 # counts how often a gene is in class B or C
+            if Days[i][ID][Columns.index("Class")] == "D": Filterinfo[ID][1] += 1 # counts how often a gene is in class D  
                 
     return New_Days, Filterinfo
 
@@ -262,24 +262,24 @@ def plot_Days(Days,log=False,Norm=False):
                         moet worden geplot.
     Postconditions:    Zorgt ervoor dat de data van elke dag in één
                         figuur zou """    
-    # make extra variables
-    add_on = '' # for the title
+    # make extra variables 
+    add_on = '' # for the title 
     norm_fac = 0 # for normalisation column index
     Colors = {'A': 'red', 'B': 'blue', 'C': 'green', 'D': 'yellow'}
     
     # use the booleans for the title
     if log:
-        add_on += ', logaritmisch'
+        add_on += ', logaritmic'
         if Norm:
-            add_on += ' en genormaliseerd'
+            add_on += ' and normalized'
             norm_fac = 1  
     elif Norm: 
-        add_on += ', genormaliseerd'
+        add_on += ', normalized'
         norm_fac = 3
     
     # start plotting
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
-    fig.suptitle("Visualisatie data"+add_on,size=24,weight='bold')
+    fig.suptitle("Visualisation data"+add_on,size=24,weight='bold')
     for i in range(len(Days)):
         ax_day = ax[i%2,i//2] # in order to have the representation of the plots be plotted in 2 lines
         ax_day.set_title("Day "+str(Day_numbers[i]))
@@ -311,13 +311,14 @@ def plot_hist(rDict):
                         dag, zodat er te zien is hoe vaak een expressiewaarde 
                         voorkomt."""
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
-    fig.suptitle("Histogrammen expressiewaarden per dag",size=24,weight='bold')
+    fig.suptitle("Histograms of expressions per day",size=24,weight='bold')
     df = pd.DataFrame.from_dict(rDict).transpose() # making a dataframe of rDict for more efficiency in plotting
 
     for i in range(len(Day_numbers)):
         ax_day = ax[i%2,i//2]
         ax_day.set_title("Day "+str(Day_numbers[i]))
         ax_day.set_xlim(-5, 5)
+        ax_day.set_ylabel("expression R")
         df[i].plot(kind='hist',ax=ax_day)
 
 
@@ -337,7 +338,7 @@ def line_plots(rDict,r_filter,movement=256):
     # ncols = math.ceil(len(rDict)**0.5) # to plot all points (not recommended)
     nrows = math.ceil(nr_of_plots/ncols)
     fig, ax = plt.subplots(ncols,nrows,figsize=(ncols*5,ncols*5),squeeze=False,sharex=True,sharey=True)
-    fig.suptitle(str(nr_of_plots)+" genexpressiewaarden door de tijd met filtergrenzen",size=ncols*10,weight='bold') 
+    fig.suptitle(str(nr_of_plots)+" genexpression over time with filter boundaries",size=ncols*8,weight='bold') 
     
     df_expr = pd.DataFrame.from_dict(rDict) # making a dataframe of rDict for more efficiency in plotting
     df_expr['Days'] = Day_numbers # adding the days in a column to make x-axis linear
@@ -352,21 +353,22 @@ def line_plots(rDict,r_filter,movement=256):
                 ax[row,col].axhline(y=-r_filter,c='r') # plot lower line
                 ax[row,col].set_xticks(Day_numbers)
                 ax[row,col].set_ylim(-2.5, 2.5)
+                ax[row,col].set_ylabel("Expression R")
     
     
 def main(file_key_word):
-    r_filter= 0.5                                           # to set the r_filter value
+    r_filter= 0.5                                                       # to set the r_filter value
     outf_names = "Filtered_data.txt","Unfiltered_data.txt"
-    Days = find_files(file_key_word)                               # make list of dictionaries
-    normSig2_add(Days)                                     # normalise values
-    Log_add(Days)                                          # calculate the LOG of values for plotting
-    Classes(Days,frequences=True)                          # determine each values class
-    add_expression(Days)                                   # calculate the r-value for expression per value
-    rDict, Filterinfo = Daysdict(Days,r_filter)            # make one library for all r-values
-    Filtered_rDict = filtering(rDict,Filterinfo)                     # filter the library based
-    dict_to_txt(Filtered_rDict,outf_names[0],"  ")      # make a file of filtered data for phase 2
-    dict_to_txt(rDict,outf_names[1],"  ")    # make a file of filtered data for phase 3
-    if input("Would you like the plots of phase 1? [y]/n \n") == "y":    # ask whether the user would like to see the plots of phase 1 (boolean input)
-        plot_phase1(Days,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
+    Days = find_files(file_key_word)                                    # make list of dictionaries
+    normSig2_add(Days)                                                  # normalise values
+    Log_add(Days)                                                       # calculate the LOG of values for plotting
+    Classes(Days,frequences=True)                                       # determine each values class
+    add_expression(Days)                                                # calculate the r-value for expression per value
+    rDict, Filterinfo = Daysdict(Days,r_filter)                         # make one library for all r-values
+    Filtered_rDict = filtering(rDict,Filterinfo)                        # filter the library based
+    dict_to_txt(Filtered_rDict,outf_names[0],"  ")                      # make a file of filtered data for phase 2
+    dict_to_txt(rDict,outf_names[1],"  ")                               # make a file of filtered data for phase 3
+    if input("Would you like the plots of phase 1? [y]/n \n") == "y":   # ask whether the user would like to see the plots of phase 1 (boolean input)
+        plot_phase1(Days,rDict,r_filter)                                # plot everything there is to plot in phase 1 based on unfiltered data
     
     return outf_names[0],outf_names[1]
