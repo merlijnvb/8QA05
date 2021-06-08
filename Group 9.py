@@ -16,14 +16,14 @@ outf_name_fase1 = F1.main(key_word)
 print("The data of Phase 1 has been written to",outf_name_fase1)
 
 # FASE 2
-# F2.main() # can be assigned to variables still
-# print("The data of Phase 2 has been written to",outf_name2) # give some user feedback that phse 2 has been completed successfully one way or another
+outf_name_fase2 = F2.main(outf_name_fase1)
+print("The data of Phase 2 has been written to",outf_name_fase2) # give some user feedback that phase 2 has been completed successfully one way or another
 
 #FASE 3
 #variables
 min_frequency = 2
 min_length_substring = 4
-f_clus_res = 'kmca_results.txt'
+f_clus_res = outf_name_fase2
 f_desc = 'GenDescription2.txt'
 f_exprs = outf_name_fase1[0]
 f_fam = 'CloneIdFamily.txt'
