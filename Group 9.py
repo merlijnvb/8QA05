@@ -11,7 +11,8 @@ import Fase1 as F1
 import Fase3 as F3
 
 # FASE 1
-outf_name_fase1 = F1.main()
+key_word = "dag"
+outf_name_fase1 = F1.main(key_word)
 print("The data of Phase 1 has been written to",outf_name_fase1)
 
 # FASE 2
