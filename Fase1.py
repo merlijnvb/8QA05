@@ -247,11 +247,11 @@ def plot_phase1(Dagen,rDict,r_filter=0.5):
     """Preconditions:  Dagen is een lijst van libraries
     Postconditions:    Roept alle mogelijkheden voor  
                         plot_dagen aan."""   
-    # for log in [False,True]:
-    #     for norm in [False,True]:
-    #         plot_dagen(Dagen,log,norm)
+    for log in [False,True]:
+        for norm in [False,True]:
+            plot_dagen(Dagen,log,norm)
             
-    # plot_hist(rDict) # to plot the histograms
+    plot_hist(rDict) # to plot the histograms
     line_plots(rDict,r_filter) # to plot the line plots
     
 
