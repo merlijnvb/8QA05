@@ -10,6 +10,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 
+#variables
+verwijderen = ['protein','similar', 'acidic', '4-like', '8-like', '-like', 'ESTs',
+                      'like', 'acid-rich', 'adhesion', 'affinity', 'activity', 'alpha-like', 'anion', 'assembly',
+                      'association', 'basic', 'candidate', 'carbon','Coenzyme', 'cofactor', 'coiled-coil',
+                      'coiled-coil-helix-coiled-coil-helix', 'cold', 'double', 'domain-containing', 'enabled',
+                      'fast', 'four', 'glucose', 'half', 'hand', 'inner', 'insert', 'inorganic', 'isoenzyme',
+                      'molecule', 'mouse', 'never', 'neighbor', 'nitrogen', 'omega', 'only', 'organic', 'outer', 'paired',
+                      'partner', 'region', 'ring', 'slow', 'similarity', 'system', 'very', '3-like', 'beta-like',
+                      'coenzyme', 'complex', 'constant', 'component', 'dependent', 'early', 'light', 'long',
+                      'protein-like', 'short', '1-like', 'activated', 'group', 'high', 'nine', 'small', 'cell',
+                      'chain', 'heavy', 'with', 'acid', 'alpha', 'beta', 'associated', 'containing', 'gamma',
+                      'gene', 'inter', 'rich', 'type', 'repeat']
 
 def data_inlezen(filename): 
     infile = open(filename)
@@ -255,7 +267,7 @@ def pie_chart(data_fam, data_clust):
 
 '''vrije interpretatie moet hier nog komen'''
 
-def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, verwijderen,fase1_data):
+def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, fase1_data):
     lib_cluster_results = data_inlezen(f_clus_res)
     lib_beschrijvingen = data_inlezen(f_desc)
     lib_expression = data_inlezen(f_exprs)
