@@ -16,8 +16,7 @@ outf_name_fase1 = F1.main(key_word)
 print("The data of Phase 1 has been written to",outf_name_fase1)
 
 # FASE 2
-outf_name_fase2 = F2.main(outf_name_fase1)
-print("The data of Phase 2 has been written to",outf_name_fase2) # give some user feedback that phase 2 has been completed successfully one way or another
+outf_name_fase2 = F2.main(outf_name_fase1[0])
 
 #FASE 3
 #variables
