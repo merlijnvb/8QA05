@@ -33,14 +33,14 @@ def find_files(file_key_word):
     
     # getting the number from the list to sort them
     day_nrs = [name.replace('.txt','') for name in filenames]
-    day_nrs = [int(name.replace(f'{file_key_word}','')) for name in day_nrs]
+    day_nrs = [int(name.replace(file_key_word,'')) for name in day_nrs]
     day_nrs.sort()
     
     # making the final, sorted list
     filenames = []
     for number in day_nrs:
         Day_numbers.append(number)
-        filenames.append("dag"+str(number)+".txt")
+        filenames.append(file_key_word+str(number)+".txt")
         
     return [readfile(filename) for filename in filenames]        
 
@@ -61,7 +61,7 @@ def readfile(filename):
     
     # make a dictionary-entry per line
     for line in lines:
-        values = line.rstrip().split('\t')
+        values = line.rstrip().split()
         
         # make all values integers
         str_vals = values[1:]
@@ -247,11 +247,11 @@ def plot_phase1(Dagen,rDict,r_filter=0.5):
     """Preconditions:  Dagen is een lijst van libraries
     Postconditions:    Roept alle mogelijkheden voor  
                         plot_dagen aan."""   
-    for log in [False,True]:
-        for norm in [False,True]:
-            plot_dagen(Dagen,log,norm)
+    # for log in [False,True]:
+    #     for norm in [False,True]:
+    #         plot_dagen(Dagen,log,norm)
             
-    plot_hist(rDict) # to plot the histograms
+    # plot_hist(rDict) # to plot the histograms
     line_plots(rDict,r_filter) # to plot the line plots
     
 
@@ -330,37 +330,43 @@ def line_plots(rDict,r_filter,movement=256):
                         de progressie van dagen en op elke y-as de expressie-
                         waarde R. Plot tevens een lijn op y=r en y=-r om aan te 
                         geven waar de filtergrens zal liggen"""
-    ncols = int(float(input("How many lineplots would you like? \n"))**0.5)
+    nr_of_plots = int(input("How many lineplots would you like? \n"))
+    if nr_of_plots < 1: return # don't start plotting if the number of plots is 0 or negative
+    
+    ncols = math.ceil(nr_of_plots**0.5)
     # ncols = math.ceil(len(rDict)**0.5) # to plot all points (not recommended)
-    nrows = ncols
+    nrows = math.ceil(nr_of_plots/ncols)
     fig, ax = plt.subplots(ncols,nrows,figsize=(ncols*5,ncols*5),squeeze=False,sharex=True,sharey=True)
-    fig.suptitle(str(ncols**2)+" lijndiagrammen met filtergrenzen",size=ncols*10,weight='bold') 
+    fig.suptitle(str(nr_of_plots)+" genexpressiewaarden door de tijd met filtergrenzen",size=ncols*10,weight='bold') 
+    
     df_expr = pd.DataFrame.from_dict(rDict) # making a dataframe of rDict for more efficiency in plotting
     df_expr['Dagen'] = Day_numbers # adding the days in a column to make x-axis linear
     df_expr.set_index("Dagen",inplace=True)
-    for col in range(ncols): # looping through 
-        for row in range(nrows):
-            ID = df_expr.columns[col*ncols+row+movement]
-            df_expr[ID].plot(ax=ax[row,col])
-            ax[row,col].set_title(str(ID))
-            ax[row,col].axhline(y=r_filter,c='r') # plot upper line
-            ax[row,col].axhline(y=-r_filter,c='r') # plot lower line
-            ax[row,col].set_xticks(Day_numbers)
-            ax[row,col].set_ylim(-2.5, 2.5)
+    for col in range(nrows): # looping through 
+        for row in range(ncols):
+            if  col*ncols+row < nr_of_plots: # in order to only plot the amount asked
+                ID = df_expr.columns[col*ncols+row+movement]
+                df_expr[ID].plot(ax=ax[row,col])
+                ax[row,col].set_title(str(ID))
+                ax[row,col].axhline(y=r_filter,c='r') # plot upper line
+                ax[row,col].axhline(y=-r_filter,c='r') # plot lower line
+                ax[row,col].set_xticks(Day_numbers)
+                ax[row,col].set_ylim(-2.5, 2.5)
     
-def main():
+    
+def main(file_key_word):
     r_filter= 0.5                                           # to set the r_filter value
-    
-    Dagen = find_files('dag')                               # make list of dictionaries
+    outf_names = "Filtered_data.txt","Unfiltered_data.txt"
+    Dagen = find_files(file_key_word)                               # make list of dictionaries
     normSig2_add(Dagen)                                     # normalise values
     Log_add(Dagen)                                          # calculate the LOG of values for plotting
     Classes(Dagen,frequences=True)                          # determine each values class
     add_expression(Dagen)                                   # calculate the r-value for expression per value
     rDict, Filterinfo = Daysdict(Dagen,r_filter)            # make one library for all r-values
     Filtered_rDict = filtering(rDict,Filterinfo)                     # filter the library based
-    dict_to_txt(Filtered_rDict,"Filtered_clusterdata.txt","  ")      # make a file of filtered data for phase 2
-    dict_to_txt(rDict,".txt","  ")    # make a file of filtered data for phase 3
+    dict_to_txt(Filtered_rDict,outf_names[0],"  ")      # make a file of filtered data for phase 2
+    dict_to_txt(rDict,outf_names[1],"  ")    # make a file of filtered data for phase 3
     if input("Would you like the plots of phase 1? [y]/n \n") == "y":    # ask whether the user would like to see the plots of phase 1 (boolean input)
         plot_phase1(Dagen,rDict,r_filter)                   # plot everything there is to plot in phase 1 based on unfiltered data
     
-    return "Filtered_clusterdata.txt","Unfiltered_clusterdata.txt"
+    return outf_names[0],outf_names[1]
