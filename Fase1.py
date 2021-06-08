@@ -29,7 +29,7 @@ def find_files(file_key_word):
     
     # creating a list of filenames
     arr = listdir(Path(__file__).parent.absolute())
-    filenames = [filename for filename in arr if f'{file_key_word}' in filename]
+    filenames = [filename for filename in arr if file_key_word in filename]
     
     # getting the number from the list to sort them
     day_nrs = [name.replace('.txt','') for name in filenames]
@@ -80,8 +80,8 @@ def normSig2_add(Days):
     Postconditions:    Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan
                         elke dictionary."""
     for Day in Days:
-        S1 = summation(Day,"P1Sig") # optellen van alle P1Sig waardes
-        S2 = summation(Day,"P2Sig") # optellen van alle P2Sig waardes
+        S1 = summation(Day,"P1Sig") # counts all P1Sig values
+        S2 = summation(Day,"P2Sig") # counts all P2Sig values
         for ID in Day:
             Day[ID].append(int(Day[ID][Columns.index("P2Sig")])*S1/S2)
 
@@ -121,7 +121,7 @@ def Classes(Days,frequences=False):
     for i in range(len(Days)):
         counts = make_class(Days[i])
         if frequences: # check whether we want the print output
-            print("\nVoor dag",Day_numbers[i],"geldt: ")
+            print("\nFor day",Day_numbers[i],"geldt: ")
             for j in range(len(counts)):
                 print("\tFrequentie van",classes[j],"is",counts[j]) 
 
