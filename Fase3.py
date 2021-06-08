@@ -267,16 +267,11 @@ def pie_chart(data_fam, data_clust):
 
 '''vrije interpretatie moet hier nog komen'''
 
-def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, fase1_data):
+def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, min_length_substring, fase1_data):
     lib_cluster_results = data_inlezen(f_clus_res)
     lib_beschrijvingen = data_inlezen(f_desc)
     lib_expression = data_inlezen(f_exprs)
     
-    if input('Would you like to know which descriptions appear almost exlcusively in the unclustered genes? [y]/n? \n') == 'y': 
-        afgevallen = telwoorden(lib_cluster_results, lib_beschrijvingen, fase1_data, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=True)
-        normal = telwoorden(lib_cluster_results, lib_beschrijvingen, fase1_data, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
-        print(f'de beschrijvingen die vrijwel alleen voorkomen in de niet geclusterde genen zijn: {check_telwoorden(afgevallen, normal)}')
-        
     in_nr_clusters = input(f'How many clusters would you like to check for similar discriptions? \nChoose a number > 0 & <= {max(list(lib_cluster_results.values()))} \nIf you don\'t want to check, type \"n\" \n')
     if in_nr_clusters != "n":
         in_nr_clusters = int(in_nr_clusters)   
@@ -284,7 +279,13 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
         if telwoorden_res != 'error':
             print(telwoorden_res)
         else:
-            return
+            return    
+    if input('Would you like to know which descriptions appear almost exlcusively in the unclustered genes? [y]/n? \n') == 'y': 
+        afgevallen = telwoorden(lib_cluster_results, lib_beschrijvingen, fase1_data, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=True)
+        normal = telwoorden(lib_cluster_results, lib_beschrijvingen, fase1_data, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
+        print(f'de beschrijvingen die vrijwel alleen voorkomen in de niet geclusterde genen zijn: {check_telwoorden(afgevallen, normal)}')
+        
+
         
     if input("Would you like the plots of phase 3? [y]/n \n")=="y":
         if input('Would you like to know the gene distribution of the clusters? [y]/n \n') == 'y':
