@@ -310,7 +310,7 @@ class KMCA:
             else:
                 seeds = [None] # IF NO SEEDS ARE GIVEN TO THIS FUNCTION AND NONE WERE GIVEN AT self.seed, NO SEED SHOUL BE USED AT ALL (SO seeds MUST BE A LIST CONTAINING None AS ITS ONLY VALUE)
         assert all([type(i)==int for i in seeds]),"The list 'seeds' may only contain integers as its values. --> optimize(seeds)"
-        
+        print('\nFinding the optimal number of clusters\nPROGRESS:')
         for k in range(k_min, k_max+1): # LOOP OVER THE RANGE OF k'S THAT IS GIVEN
             self.k = k
             results = {} # THIS DICTIONARY WILL KEEP TRACK OF THE RESULTS FOUND FOR EVERY DIFFERENT SEED
@@ -334,16 +334,14 @@ class KMCA:
                 self.lib_Escores[k] = list(results.values())[np.argmin(list(results.values()))]
                     
             if k_min != k_max: # IF k_min IS EQUAL TO k_max, ONLY ONE VALUE FOR k IS TESTED. IN THAT CASE, THE PROGRESS BAR IS NOT NECESSARY.
-                print(f'{((k-k_min)/(k_max-k_min))*100}% ', end='\r') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
-        
+                print(f'{(((k-k_min)/(k_max-k_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
+                
         if measure == 'Sil':
             self.k =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
         else:
             self.k = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
         
         self.clustering(data)
-        self.Escore()
-        self.silhouette_score()
         
         return self.lib_clustered
 
@@ -448,7 +446,7 @@ class GBCA:
             
             for axis in grid:
                 self.lib_grid[index][axis] = grid[axis][i]        
-    
+                
     
     def assign_neigbours(self, index0, cluster):
         '''
@@ -459,7 +457,6 @@ class GBCA:
         Postconditions: the protein IDs of all the neigbouring proteins to the starting protein are added to the list 'cluster'
         Task of function: find all the neigbours of starting protein x and assign it to the same group, then repeat for those neighbours
         '''
-
         neighbours = []
     
         for index in self.indices_not_clustered: # LOOP OVER THE NOT YET ASSIGNED PROTEINS
@@ -624,7 +621,7 @@ class GBCA:
             data = self.lib_data
         elif self.lib_data != data:
             self.lib_data = data
-        
+        print('\nFinding the optimal number of subspaces\nPROGRESS:')
         for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SUBSPACES THAT IS GIVEN
             self.subspaces = subspace
             self.clustering()
@@ -635,22 +632,20 @@ class GBCA:
                     self.lib_silscores[subspace] = self.Sil_score
                 except: # WHEN GIVEN NaN (WHEN NOT ALL CLUSTERS ARE FILLED OR ONLY 1 CLUSTER EXISTS) RETURN A VALUE THAT IS OUT OF THE SILHOUETTE RANGE
                     self.lib_silscores[subspace] = -2
-                    
+  
             else: # If not 'Sil', the measure is 'E' (see assert commands above)
                 self.Escore()
                 self.lib_Escores[subspace] = self.E_score
                     
-            print(f'{((subspace-subspace_min)/(subspace_max-subspace_min))*100}% ', end='\r') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
-        
+            print(f'{(((subspace-subspace_min)/(subspace_max-subspace_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
+
         if measure == 'Sil':
             self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
         else:
             self.subspaces = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
-            
+   
         self.clustering()
-        self.Escore()
-        self.silhouette_score()
-        
+
         return self.lib_clustered
 
 
@@ -661,9 +656,12 @@ class GBCA:
 def return_txt_file(data, name, format_data):
     lib_unfolded = dict()
     score = False
-    
+    anticlusters = []
     for cluster in data:
-        if type(data[cluster]) == int:
+        if cluster == -1:
+            for i in data[cluster]:
+                anticlusters.append(data[cluster][i])
+        if type(data[cluster]) == int: 
             lib_unfolded[data[cluster]] = cluster
         else:
             try:
@@ -673,32 +671,53 @@ def return_txt_file(data, name, format_data):
                 score = True
                 break
     
-    file = open(f'{name}results.txt', 'w')
-    indices_lost = list()
+    file = open(name, 'w')
     
     if score == False:
         for INDEX in format_data:
             try:
                 line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
                 file.write(line)
-            except:
-                indices_lost.append(INDEX)
+            except Exception:
+                pass
     else:
-        for k in data:
-            line = str(k) + " " + str(data[k]) + "\n"            
+        for subspace in data:
+            line = str(subspace) + " " + str(data[subspace]) + "\n"            
             file.write(line)
             
     file.close()
     
-    if len(indices_lost) > 0:
-        print(f'Function: {name} --> these indices are lost: {indices_lost}')
+    if len(anticlusters) > 0:
+        print(f'\nFunction: {name} --> These clusters are lost (size is below threshold): {anticlusters}')
     
 
+def main(filename):  
+     # APPLY KMCA TO THE GIVEN DATASET:
+     lib_data = file_to_lib(filename)
+     
+     if str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA": '))=='KMCA':
+         k_min = int(input('Minimum number of clusters (k_min): '))
+         k_max = int(input('Maximum number of clusters (k_max): '))
+         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
+         seeds = list(range(int(input('How many different seeds should be chosen? (used for random initial cluster assignment)\nNumber of different seeds: '))))
+         
+         kmca = KMCA(data=lib_data)
+         kmca_results = kmca.optimize(k_min=k_min, k_max=k_max, measure=measure, seeds=seeds)
+         outfile_name = 'kmca_results.txt'
+         return_txt_file(kmca_results, outfile_name, lib_data)
+         print('Clustering finished and optimized; The optimal number of clusters is',kmca.k)
+         
+     else:
+         subspace_min = int(input('Minimum number of subspaces (subspace_min): '))
+         subspace_max = int(input('Maximum number of subspaces (subspace_max): '))
+         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
 
-# APPLY KMCA TO THE GIVEN DATASET:
-lib_data = file_to_lib('Data\Voorbeeld_clusterdata.txt')
-kmca = KMCA(data=lib_data)
-kmca_results = kmca.optimize(k_min=1,k_max=6,measure='E',seeds=list(range(10)))
-return_txt_file(kmca_results, 'kmca_', lib_data)
-
+         gbca = GBCA(data=lib_data)
+         gbca_results = gbca.optimize(subspace_min=subspace_min, subspace_max=subspace_max, measure=measure)
+         outfile_name = 'gbca_results.txt'
+         return_txt_file(gbca_results, outfile_name, lib_data)
+         print('Clustering finished and optimized; The optimal number of subspaces is',gbca.subspaces,)
+     return outfile_name
+ 
+main('Data\Voorbeeld_clusterdata.txt')
 
