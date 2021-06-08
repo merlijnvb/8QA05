@@ -692,11 +692,10 @@ def return_txt_file(data, name, format_data):
     
 
 def main(filename):
-     print(filename)
      # APPLY KMCA TO THE GIVEN DATASET:
      lib_data = file_to_lib(filename)
-     
-     if str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA": '))=='KMCA':
+     algorithm = str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA": '))
+     if algorithm == 'KMCA':
          k_min = int(input('Minimum number of clusters (k_min): '))
          k_max = int(input('Maximum number of clusters (k_max): '))
          measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
@@ -708,15 +707,18 @@ def main(filename):
          return_txt_file(kmca_results, outfile_name, lib_data)
          print(f'\nClustering finished and optimized; The optimal number of clusters is {kmca.k}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {kmca.E_score}\nThe Silhouette score is {kmca.Sil_score}\n')
          
-     else:
+     elif algorithm == 'GBCA':
+         scope = int(input('What is the range (in subspaces) in which a cell must be to another cell to be considered its neighbour? '))
+         thres = int(input('What is the minimum amount of datapoints that must be in a cluster to consider it a valid cluster? '))
          subspace_min = int(input('Minimum number of subspaces (subspace_min): '))
          subspace_max = int(input('Maximum number of subspaces (subspace_max): '))
          measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
 
-         gbca = GBCA(data=lib_data)
+         gbca = GBCA(data=lib_data, scope=scope, thres=thres)
          gbca_results = gbca.optimize(subspace_min=subspace_min, subspace_max=subspace_max, measure=measure)
          outfile_name = 'gbca_results.txt'
          return_txt_file(gbca_results, outfile_name, lib_data)
          print(f'\nClustering finished and optimized; The optimal number of subspaces is {gbca.subspaces}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {gbca.E_score}\nThe Silhouette score is {gbca.Sil_score}\n')
-         
+     else:
+         raise ValueError('Value Error: no valid algorithm name provided. Please type either "KMCA" or "GBCA".') 
      return outfile_name
