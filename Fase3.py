@@ -26,7 +26,7 @@ in_nr_clusters = 1
 min_length_substring = 4
 f_clus_res = 'kmca_results.txt'
 f_desc = 'GenDescription2.txt'
-f_exprs = 'Voorbeeld_clusterdata.txt'
+f_exprs = 'filterd.txt'
 f_fam = 'CloneIdFamily.txt'
 
 def data_inlezen(filename): 
@@ -89,28 +89,28 @@ def plot_clusters(expression_data, results):
     gen_IDs = list(df_data.index.values)            #lijst van alle gen ID's in het dataframe   
     id_with_cluster = {}                            
     for ID in gen_IDs:                          
-        id_with_cluster[ID] = int(results[ID])           #library met gen ID als key en het cluster nummer als value 
+        if ID in results:
+            id_with_cluster[ID] = int(results[ID])           #library met gen ID als key en het cluster nummer als value 
+    # print(id_with_cluster)
     df_data['cluster'] = id_with_cluster.values()   #een nieuwe column toevoegen, die voor elk gen het cluster nummer weer geeft. 
-    max_cluster = np.unique(list(id_with_cluster.values())).max() #het grootste cluster nummer opslaan
+    max_cluster = len(np.unique(list(id_with_cluster.values()))) #de lengte van het cluster opslaan
 
     df_grouped = df_data.groupby('cluster')     #groepeer dataframe bij cluster nummer
     lower_bound = df_grouped.quantile(q=0.25) # maak eventueel variabel als dit nodig is
     higher_bound = df_grouped.quantile(q=0.75) # maak eventueel variabel als dit nodig is
     middle_bound = df_grouped.quantile(q=0.5) # maak eventueel variabel als dit nodig is
     mean = df_grouped.mean()
-    fig, ax=plt.subplots(ncols=1,nrows=max_cluster,figsize=(15,40),sharex=True)
+    fig, ax=plt.subplots(ncols=1,nrows=max_cluster,figsize=(50,40),sharex=True)
     
     for cluster in mean.index:
-        lower_bound.loc[cluster].plot(ax=ax[cluster-1], alpha=1, linewidth=1)
-        middle_bound.loc[cluster].plot(ax=ax[cluster-1], alpha=0.5, linewidth=1)
-        higher_bound.loc[cluster].plot(ax=ax[cluster-1], alpha=1, linewidth=1)
-        mean.loc[cluster].plot(ax=ax[cluster-1], alpha=1, linewidth=3)
-        ax[cluster-1].legend(['q=0.25','q=0.5','q=0.75','mean'])
-        if cluster == 0:
-            cluster = mean.index[-1] + 1
-        ax[cluster-1].set_title(f'Cluster: {cluster}')
-        ax[cluster-1].set_xticks(days)
-        ax[cluster-1].set_xlim(days[0],days[-1])
+        lower_bound.loc[cluster].plot(ax=ax[cluster], alpha=1, linewidth=1)
+        middle_bound.loc[cluster].plot(ax=ax[cluster], alpha=0.5, linewidth=1)
+        higher_bound.loc[cluster].plot(ax=ax[cluster], alpha=1, linewidth=1)
+        mean.loc[cluster].plot(ax=ax[cluster], alpha=1, linewidth=3)
+        ax[cluster].legend(['q=0.25','q=0.5','q=0.75','mean'])
+        ax[cluster].set_title(f'Cluster: {cluster}')
+        ax[cluster].set_xticks(days)
+        ax[cluster].set_xlim(days[0],days[-1])
     
 def telwoorden(cluster_data, beschrijvingen_data, ruwe_data_fase, verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen = True):
     if (in_nr_clusters <= 0) and (min_frequency > 0):
@@ -279,7 +279,7 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
     if input('Wil je weten hoe de genen over de clusters verdeeld zijn? [y]/n \n') == 'y':
         plot_clusters(lib_expression, lib_cluster_results)
    
-    question = input(f'Wat is het aantal clusters dat je wilt checken voor overeenkomende beschrijvingen? \nKies een getal > 0 & <= {max(list(lib_cluster_results.values()))} \nals je dit niet wilt checken: n \n')
+    question = input(f'Wat is het aantal clusters dat je wilt checken voor overeenkomende beschrijvingen? \nKies een getal > 0 & <= {len(np.unique(list(lib_cluster_results.values())))} \nals je dit niet wilt checken: n \n')
     if question != "n":
         in_nr_clusters = question
         in_nr_clusters = int(in_nr_clusters)   
@@ -295,19 +295,17 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_
         normal = telwoorden(lib_cluster_results, lib_beschrijvingen, 'Ruwe Data Fase 3.txt', verwijderen, min_frequency, in_nr_clusters, min_length_substring, alleen_afgevallen=False)
         print(f'de beschrijvingen die vrijwel alleen voorkomen in de niet geclusterde genen zijn: {check_telwoorden(afgevallen, normal)}')
    
-    if input('Wil je weten hoe de families over de clusters verdeeld zijn? [y]/n? \n') == 'y':
+    if input('Wil je zien wat het verloop van de families is? [y]/n? \n') == 'y':
         lib_family = data_inlezen(f_fam)
-
-        if input('Wil je de verdeling zien via een lijnplots? [y]/n \n')=='y':
-            empty_familys = plot_familys(lib_family, lib_expression)
-            print(f'De volgende families zijn niet ingedeeld in clusters: {empty_familys}')
-            
-            if input('Wil je ook zien hoe de families over de clusters zijn verdeeld met behulp van pie-charts? [y]/n \n') =='y':
-                empty_familys = pie_chart(lib_family, lib_cluster_results)
-
-            
-        elif input('Wil je de verdeling zien via pie-charts? [y]/n \n')=='y':
+        empty_familys = plot_familys(lib_family, lib_expression)
+        print(f'De volgende families zijn niet ingedeeld in clusters: {empty_familys}')
+        
+        if input('Wil je ook zien hoe de families over de clusters zijn verdeeld met behulp van pie-charts? [y]/n \n') =='y':
             empty_familys = pie_chart(lib_family, lib_cluster_results)
+
+            
+    if input('Wil je de verdeling zien via pie-charts? [y]/n \n')=='y':
+        empty_familys = pie_chart(lib_family, lib_cluster_results)
     
     
             
