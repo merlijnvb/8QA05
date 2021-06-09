@@ -1,3 +1,10 @@
+"""
+Course code: 8QA05
+group number: 9
+members: Merlijn van Benthem, Dimo Devetzis en Sam Reijs
+"""
+
+
 import numpy as np
 
 
