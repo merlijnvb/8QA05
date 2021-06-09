@@ -7,7 +7,7 @@ members: Iris Almekinders, Merlijn van Benthem, Dimo Devetzis, Elizabeth Ninh, N
 
 # libraries
 import Fase1 as F1
-# import Fase2 as F2
+import Fase2 as F2
 import Fase3 as F3
 
 # FASE 1
