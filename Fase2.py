@@ -12,7 +12,7 @@ import numpy as np
    FUNCTION TO IMPORT TEXTFILES AND RETURN DICTIONARIES
         
 """
-def file_to_lib(FileName):
+def file_to_dict(FileName):
     '''
         Preconditions:  'path/filename' --> the file you want to open and convert to a dictionary.
         Postconditions: A dictionary:
@@ -26,22 +26,20 @@ def file_to_lib(FileName):
     opened_data = opened_data.splitlines()
     read_data.close()
         
-    lib = {}
+    data_dict = {}
     
     for lines in opened_data:
         line = lines.split()
         if len(line[1:]) == 1:
-            lib[int(line[0])] = int(line[1])
+            data_dict[int(line[0])] = int(line[1])
         else:
-            lib[int(line[0])] = np.array(line[1:]).astype(float)
+            data_dict[int(line[0])] = np.array(line[1:]).astype(float)
             
-    return lib
+    return data_dict
 
 
 """
-
     K-MEANS CLUSTERING ALGORITHM (KMCA)
-
 """
 class KMCA:
     def __init__(self, k=6, seeds=[], data={}, normalize=True):
@@ -52,12 +50,12 @@ class KMCA:
                         --> self.seed = a list of all seeds to use for choosing random indexes for initial clustering.
                         --> self.bool_normalized = boolean to check if the data is already normalized.
                         --> self.bool_want_normalized = boolean to check if user wants to normilize.
-                        --> self.lib_[...] = empty dictionary that is filled later.
-                            --> lib_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
+                        --> self.dict_[...] = empty dictionary that is filled later.
+                            --> dict_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
                         --> self.E_score = set to infinity, because if we don't cluster the data in the first iteration the E_score is not representative.
                         --> self.Sil_score = set to 0, because if we don't cluster the data in the first iteration the Sil_score is not representative.
-                        --> self.lib_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
-                        --> self.lib_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.    
+                        --> self.dict_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
+                        --> self.dict_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.    
         '''
         self.k = k
         self.seeds = seeds
@@ -65,13 +63,13 @@ class KMCA:
             assert all([type(i)==int for i in seeds]),"The list 'seeds' may only contain integers as its values. --> __init__(seeds)"
         self.bool_normalized = False
         self.bool_want_normalized = normalize
-        self.lib_data = data
-        self.lib_clustered = {}
-        self.lib_centroid = {}
+        self.dict_data = data
+        self.dict_clustered = {}
+        self.dict_centroid = {}
         self.E_score = float('inf')
         self.Sil_score = -2
-        self.lib_Escores = {}
-        self.lib_silscores = {}
+        self.dict_Escores = {}
+        self.dict_silscores = {}
 
     
     
@@ -86,11 +84,11 @@ class KMCA:
         
         for index in data_unnorm:
             magnitude = np.sqrt(np.sum(np.square(np.array(data_unnorm[index]).astype(float)))) ## SET DATA TYPE TO FLOAT --> THEN CALCULATE THE LENGTH OF THE VECTOR BY APPLYING THE FORMULA IN THE CASUS
-            self.lib_data[index] = np.divide(np.array(data_unnorm[index]).astype(float), magnitude) ## DIVIDE EACH VALUE IN THE CORDINATES BY THE LENGTH OF THE VECTOR
+            self.dict_data[index] = np.divide(np.array(data_unnorm[index]).astype(float), magnitude) ## DIVIDE EACH VALUE IN THE CORDINATES BY THE LENGTH OF THE VECTOR
         
         self.bool_normalized = True
         
-        return self.lib_data
+        return self.dict_data
     
     
     
@@ -104,21 +102,21 @@ class KMCA:
         '''
         
         # ERROR CHECHING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        assert self.lib_data != {},"No data given. --> call function clustering(data) or __init__(data) or normalize(data)" # CHECKING IF LIB_DATA IS EMPTY
+        assert self.dict_data != {},"No data given. --> call function clustering(data) or __init__(data) or normalize(data)" # CHECKING IF dict_data IS EMPTY
         
         np.random.seed(seed)
         
-        randnr = np.random.randint(0,self.k,len(self.lib_data))
-        labels = randnr#np.random.randint(0,self.k,len(self.lib_data))
-        lib_labeled = {}
+        randnr = np.random.randint(0,self.k,len(self.dict_data))
+        labels = randnr#np.random.randint(0,self.k,len(self.dict_data))
+        dict_labeled = {}
         
-        for i in range(len(self.lib_data)):
-            lib_labeled[list(self.lib_data.keys())[i]] = labels[i]
+        for i in range(len(self.dict_data)):
+            dict_labeled[list(self.dict_data.keys())[i]] = labels[i]
             
         for k in range(self.k):
-            self.lib_clustered[k] = np.array([i for i,j in lib_labeled.items() if j == k])
+            self.dict_clustered[k] = np.array([i for i,j in dict_labeled.items() if j == k])
         
-        return self.lib_clustered
+        return self.dict_clustered
     
     
     
@@ -131,17 +129,17 @@ class KMCA:
         '''
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
+        if self.dict_data == {}: # CHECKING IF dict_data IS EMPTY
             raise ImportError("No input given. --> clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_clustered == {}: # CHECKING IF LIB_CLUSTERED IS EMPTY
-                raise ImportError("No input given and no lib_clustered known. --> call function clustering(data) or __init__(data) or normalize(data) and call function cluster0()")
-        if (self.lib_clustered == {}) & (self.lib_data != {}): # CHECKING IF LIB_CLUSTERED IS EMPTY BUT LIB_DATA IS GIVEN
-            raise ImportError("No lib_clustered known. --> call function cluster0()")
+            if self.dict_clustered == {}: # CHECKING IF dict_clustered IS EMPTY
+                raise ImportError("No input given and no dict_clustered known. --> call function clustering(data) or __init__(data) or normalize(data) and call function cluster0()")
+        if (self.dict_clustered == {}) & (self.dict_data != {}): # CHECKING IF dict_clustered IS EMPTY BUT dict_data IS GIVEN
+            raise ImportError("No dict_clustered known. --> call function cluster0()")
             
-        for k in self.lib_clustered: # CALCULATE FOR EVERY CLUSTER THE MEAN CORDINATE (=CENTROID)
-            self.lib_centroid[k] = np.mean(np.array([self.lib_data[index] for index in self.lib_clustered[k]]), axis=0) 
+        for k in self.dict_clustered: # CALCULATE FOR EVERY CLUSTER THE MEAN CORDINATE (=CENTROID)
+            self.dict_centroid[k] = np.mean(np.array([self.dict_data[index] for index in self.dict_clustered[k]]), axis=0) 
             
-        return self.lib_centroid
+        return self.dict_centroid
     
     
     
@@ -152,17 +150,17 @@ class KMCA:
         '''
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
+        if self.dict_data == {}: # CHECKING IF dict_data IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_centroid == {}: # CHECKING IF LIB_CENTROID IS EMPTY
-                raise ImportError("No input given and no lib_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
-        if (self.lib_centroid == {}) & (self.lib_data != {}): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
-            raise ImportError("No lib_centroid known. --> call function centroid()")
+            if self.dict_centroid == {}: # CHECKING IF dict_centroid IS EMPTY
+                raise ImportError("No input given and no dict_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
+        if (self.dict_centroid == {}) & (self.dict_data != {}): # CHECKING IF dict_centroid IS EMPTY BUT dict_data IS GIVEN
+            raise ImportError("No dict_centroid known. --> call function centroid()")
             
         summation = 0
     
         for k in range(self.k): # CALCULATE FOR EVERY CLUSTER THE E_SCORE
-            summation += np.sum([np.square(abs(np.subtract(self.lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
+            summation += np.sum([np.square(abs(np.subtract(self.dict_centroid[k], self.dict_data[dis]))) for dis in self.dict_clustered[k]])
             
         # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE K-MEANS FIT
         self.E_score = summation / self.k
@@ -184,26 +182,26 @@ class KMCA:
         '''
         list_scores = []
         
-        for index in self.lib_data:
+        for index in self.dict_data:
             # GET THE CLUSTER #NR WHICH THE PROTEIN IS ASSIGNED TO
-            cluster_nr = [cluster for cluster, indices in self.lib_clustered.items() if index in indices] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            cluster_nr = [cluster for cluster, indices in self.dict_clustered.items() if index in indices] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
 
             #CHECK IF THE PROTEIN IS ASSIGNED TO A CLUSTER
             if cluster_nr != []:
                 cluster_nr = cluster_nr[0]
             
-                if len(self.lib_clustered[cluster_nr]) > 1:
+                if len(self.dict_clustered[cluster_nr]) > 1:
                     # CALCULATE THE MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS IN ITS CLUSTER (INTERNAL):
-                    dissimilarity_internal = np.sum([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data]) / (len(self.lib_data)-1)
+                    dissimilarity_internal = np.sum([np.linalg.norm(self.dict_data[index] - self.dict_data[index_in]) for index_in in self.dict_data]) / (len(self.dict_data)-1)
                 
                     # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
                     # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
-                    dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_ex]) for index_ex in self.lib_data if index_ex in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if cluster != cluster_nr])
+                    dissimilarity_external = np.min([np.mean([np.linalg.norm(self.dict_data[index] - self.dict_data[index_ex]) for index_ex in self.dict_data if index_ex in self.dict_clustered[cluster]]) for cluster in self.dict_clustered if cluster != cluster_nr])
                 
                     # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
                     sil_score_i = (dissimilarity_external - dissimilarity_internal) / max(dissimilarity_external,dissimilarity_internal)
                 
-                if len(self.lib_clustered[cluster_nr]) == 1:
+                if len(self.dict_clustered[cluster_nr]) == 1:
                     sil_score_i = 0
             
                 list_scores.append(sil_score_i)
@@ -225,22 +223,22 @@ class KMCA:
         '''
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
-        if self.lib_data == {}: # CHECKING IF LIB_DATA IS EMPTY
+        if self.dict_data == {}: # CHECKING IF dict_data IS EMPTY
             raise ImportError("No input given. --> call function clustering(data) or __init__(data) or normalize(data)")
-            if self.lib_centroid == {}: # CHECKING IF LIB_CENTROIDS IS EMPTY
-                raise ImportError("No input given and no lib_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
-        if (self.lib_centroid == {}) & (self.lib_data != {}): # CHECKING IF LIB_CENTROID IS EMPTY BUT LIB_DATA IS GIVEN
-            raise ImportError("No lib_centroid known. --> call function centroid()")
+            if self.dict_centroid == {}: # CHECKING IF dict_centroidS IS EMPTY
+                raise ImportError("No input given and no dict_centroid known. --> call function clustering(data) or __init__(data) or normalize(data) and call function centroid() or function clustering()")
+        if (self.dict_centroid == {}) & (self.dict_data != {}): # CHECKING IF dict_centroid IS EMPTY BUT dict_data IS GIVEN
+            raise ImportError("No dict_centroid known. --> call function centroid()")
         
-        self.lib_clustered = {k:[] for k in range(self.k)} # EMPTY THE CLUSTERED LIBRARY
+        self.dict_clustered = {k:[] for k in range(self.k)} # EMPTY THE CLUSTERED DICTIONARY
         
-        for index in self.lib_data: # LOOP OVER EVERY PROTEIN IN THE SELF.LIB_DATA
+        for index in self.dict_data: # LOOP OVER EVERY PROTEIN IN THE SELF.dict_data
             # CALCULATE THE DISTANCE FROM THE PROTEIN TO EVERY CENTROID (CLUSTER) AND PICK THE CENTROID WHICH IS CLOSEST TO THE PROTEIN
-            cluster = np.argmin([np.sqrt(np.sum(np.square(np.subtract(self.lib_centroid[k],self.lib_data[index])))) for k in range(self.k)])
-            # APPEND THE CLUSTER LIST IN THE LIBRARY WITH THE CORRESPONDING PROTEIN ID
-            self.lib_clustered[cluster].append(index)
+            cluster = np.argmin([np.sqrt(np.sum(np.square(np.subtract(self.dict_centroid[k],self.dict_data[index])))) for k in range(self.k)])
+            # APPEND THE CLUSTER LIST IN THE DICTIONARY WITH THE CORRESPONDING PROTEIN ID
+            self.dict_clustered[cluster].append(index)
 
-        return self.lib_clustered
+        return self.dict_clustered
     
     
     
@@ -258,14 +256,14 @@ class KMCA:
         
         # ERROR CHECKING --> WHEN FUNCTION IS CALLED BY USER AND NOT BY ALGORITHM ITSELF --> PREVENTING LARGER ERRORS
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
-        assert data != {} or self.lib_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
-        if data == {} and self.lib_data != {}:
-            data = self.lib_data
-        elif self.lib_data != data:
-            self.lib_data = data
+        assert data != {} or self.dict_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        if data == {} and self.dict_data != {}:
+            data = self.dict_data
+        elif self.dict_data != data:
+            self.dict_data = data
             
-        if (self.bool_want_normalized) & (self.bool_normalized == False): # CHECKING IF LIB_DATA ALREADY IS GIVEN, BUT IS NOT NORMALIZED YET AND USER WANTS TO NORMALIZE (IS MOSTLY USED IF USER WANTS TO DIRECTLY OPTIMIZE THEIR CLUSTERING ALGORITHM)
-            self.normalize(self.lib_data)
+        if (self.bool_want_normalized) & (self.bool_normalized == False): # CHECKING IF dict_data ALREADY IS GIVEN, BUT IS NOT NORMALIZED YET AND USER WANTS TO NORMALIZE (IS MOSTLY USED IF USER WANTS TO DIRECTLY OPTIMIZE THEIR CLUSTERING ALGORITHM)
+            self.normalize(self.dict_data)
         
         self.cluster0(seed)
         self.centroid()
@@ -273,8 +271,8 @@ class KMCA:
         
         optimized = False
         while optimized == False: # KEEP CALCULATING NEW CENTROIDS AND THEREFORE NEW CLUSTERS UNTIL THE E_SCORE IS AT ITS MAXIMUM
-            self.lib_clustered = self.assign_cluster()
-            self.lib_centroid = self.centroid()
+            self.dict_clustered = self.assign_cluster()
+            self.dict_centroid = self.centroid()
             E_score_new = self.Escore()
                 
             if self.E_score > E_score_new:
@@ -282,7 +280,7 @@ class KMCA:
             else:
                 optimized = True
             
-        return self.lib_clustered
+        return self.dict_clustered
         
     
     def optimize(self, data={}, k_min=2, k_max=10, measure = 'Sil', seeds = []):
@@ -292,10 +290,10 @@ class KMCA:
                             --> Value = list of floats
                         k_min, k_max: range in which parameter k can be varied (lowest = k_min, highest = k_max)
                         measure: measure by which to evaluate how well the clustering fits (either 'E' for E-score or 'Sil' for silhouette score)
-        Postconditions: lib_clustered: a dictionary:
+        Postconditions: dict_clustered: a dictionary:
                                     --> Key = Cluster #nr
                                     --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
-                        lib_Silscores/lib_Escores: a dictionary:
+                        dict_silscores/dict_Escores: a dictionary:
                                                 --> Key = k
                                                 --> Value = Sil_score/E_score
         Task of function: calculating which k gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different k
@@ -304,12 +302,12 @@ class KMCA:
         assert k_min >= 1, 'k_min must be 1 or higher. --> optimize(k_min)'
         assert (measure == 'Sil' or measure == 'E'), "Measure must either be 'Sil' or 'E'. --> optimize(measure)"
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
-        assert data != {} or self.lib_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        assert data != {} or self.dict_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
         
-        if data == {} and self.lib_data != {}:
-            data = self.lib_data
-        elif self.lib_data != data:
-            self.lib_data = data
+        if data == {} and self.dict_data != {}:
+            data = self.dict_data
+        elif self.dict_data != data:
+            self.dict_data = data
             
         if seeds == []: 
             if self.seeds != []:
@@ -336,28 +334,26 @@ class KMCA:
                     results[seed] = self.E_score
 
             if measure == 'Sil':
-                self.lib_silscores[k] = list(results.values())[np.argmax(list(results.values()))]
+                self.dict_silscores[k] = list(results.values())[np.argmax(list(results.values()))]
             else:
-                self.lib_Escores[k] = list(results.values())[np.argmin(list(results.values()))]
+                self.dict_Escores[k] = list(results.values())[np.argmin(list(results.values()))]
                     
             if k_min != k_max: # IF k_min IS EQUAL TO k_max, ONLY ONE VALUE FOR k IS TESTED. IN THAT CASE, THE PROGRESS BAR IS NOT NECESSARY.
                 print(f'{(((k-k_min)/(k_max-k_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
                 
         if measure == 'Sil':
-            self.k =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
+            self.k =  list(self.dict_silscores.keys())[np.argmax(list(self.dict_silscores.values()))]
         else:
-            self.k = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
+            self.k = list(self.dict_Escores.keys())[np.argmin(list(self.dict_Escores.values()))]
         
         self.clustering(data)
         
-        return self.lib_clustered
+        return self.dict_clustered
 
 
 
 """
-
     GRID-BASED CLUSTERING ALGORITHM (GBCA)
-
 """
 class GBCA:
     def __init__(self, scope=1, subspaces=9, thres=3, data={}):
@@ -369,27 +365,27 @@ class GBCA:
                         --> self.scope = range of neigbours (scope).
                         --> self.subspaces = #nr of subpaces (subspaces).
                         --> self.thres = #nr of datapoints within group of cells (thres).
-                        --> self.lib_[...] = empty dictionary that is filled later.
-                            --> lib_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
+                        --> self.dict_[...] = empty dictionary that is filled later.
+                            --> dict_data can be an empty dicionary or can be filled from the beginning. This choice is up to the user.
                         --> self.indices_not_clustered = empty array that is filled later.
                         --> self.E_score = set to infinity, because if we don't cluster the data in the first iteration the E_score is not representative.
                         --> self.Sil_score = set to 0, because if we don't cluster the data in the first iteration the Sil_score is not representative.
-                        --> self.lib_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.
-                        --> self.lib_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
+                        --> self.dict_silscores = empty dictionary that is later filled with different Silhouette scores when parameters are changed.
+                        --> self.dict_Escores = empty dictionary that is later filled with different E-scores when parameters are changed.
         '''
         self.scope = scope
         self.subspaces = subspaces 
         self.thres = thres 
-        self.lib_data = data
-        self.lib_axis = {}
-        self.lib_interval = {}
-        self.lib_grid = {}
-        self.lib_clustered = {}    
+        self.dict_data = data
+        self.dict_axis = {}
+        self.dict_interval = {}
+        self.dict_grid = {}
+        self.dict_clustered = {}    
         self.indices_not_clustered = np.array([])
         self.E_score = float('inf')
         self.Sil_score = -2
-        self.lib_Escores = {}
-        self.lib_silscores = {}
+        self.dict_Escores = {}
+        self.dict_silscores = {}
             
         
     def interval_data(self, data={}):
@@ -403,26 +399,26 @@ class GBCA:
         Task of function: calculate the boundries of the supspaces for every axis
         '''
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
-        assert data != {} or self.lib_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
-        if data == {} and self.lib_data != {}:
-            data = self.lib_data
-        elif self.lib_data != data:
-            self.lib_data = data
+        assert data != {} or self.dict_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        if data == {} and self.dict_data != {}:
+            data = self.dict_data
+        elif self.dict_data != data:
+            self.dict_data = data
         
-        # CONVERT THE DATA IN LIB_DATA TO A DICTIONARY WITH THE KEYS BEING THE AXES AND THE VALUES BEING THE CORRESPONDING VALUES OF EVERY AXIS FOR EVERY PROTEIN
-        for axis in range(len(list(self.lib_data.values())[0])): 
+        # CONVERT THE DATA IN dict_data TO A DICTIONARY WITH THE KEYS BEING THE AXES AND THE VALUES BEING THE CORRESPONDING VALUES OF EVERY AXIS FOR EVERY PROTEIN
+        for axis in range(len(list(self.dict_data.values())[0])): 
             x = []
-            for index in self.lib_data: 
-                x.append(float(self.lib_data[index][axis]))  
+            for index in self.dict_data: 
+                x.append(float(self.dict_data[index][axis]))  
         
-            self.lib_axis[axis] = np.array(x) 
+            self.dict_axis[axis] = np.array(x) 
        
         # CALCULATE THE INTERVALS PER AXIS USING THE MINIMUM AND MAXIMUM (RANGE IN WHICH ALL DATA POINTS LAY)
-        for axis in self.lib_axis:
-            minimum = np.min(self.lib_axis[axis])
-            maximum = np.max(self.lib_axis[axis])
+        for axis in self.dict_axis:
+            minimum = np.min(self.dict_axis[axis])
+            maximum = np.max(self.dict_axis[axis])
 
-            self.lib_interval[axis] = np.mgrid[minimum:maximum:complex(0,self.subspaces+1)] # MAKE 1-D GRID => ((abs(min)+max/subspaces) * n_step) + min
+            self.dict_interval[axis] = np.mgrid[minimum:maximum:complex(0,self.subspaces+1)] # MAKE 1-D GRID => ((abs(min)+max/subspaces) * n_step) + min
         
         
         
@@ -436,23 +432,23 @@ class GBCA:
         
         grid = {}
         
-        for axis in self.lib_interval: # LOOP OVER EVERY AXIS
-            lib_axis_subspace = self.lib_axis[axis].copy() # COPY THE AXIS LIST TO CONVERT THE DATAPOINTS WHICH FALLS BETWEEN INTERVALS TO SUBSPACE IDs
+        for axis in self.dict_interval: # LOOP OVER EVERY AXIS
+            dict_axis_subspace = self.dict_axis[axis].copy() # COPY THE AXIS LIST TO CONVERT THE DATAPOINTS WHICH FALLS BETWEEN INTERVALS TO SUBSPACE IDs
             
-            for interval in range(1,len(self.lib_interval[axis])): # LOOP OVER EVERY INTERVAL EXCEPT THE FIRST ONE
+            for interval in range(1,len(self.dict_interval[axis])): # LOOP OVER EVERY INTERVAL EXCEPT THE FIRST ONE
                 # APPLY THE INTERVAL CONDITIONS TO THE CORRESPONDING AXIS AND CONVERT THE DATAPOINTS WHICH RETURN TRUE TO THE CONDITIONS TO THE SUBSPACE ID
-                lib_axis_subspace[(self.lib_axis[axis] >= self.lib_interval[axis][interval-1]) & (self.lib_axis[axis] <= self.lib_interval[axis][interval])] = interval
+                dict_axis_subspace[(self.dict_axis[axis] >= self.dict_interval[axis][interval-1]) & (self.dict_axis[axis] <= self.dict_interval[axis][interval])] = interval
                          
-            # SAVE A LIBRARY WITH AS KEY THE AXIS AND AS VALUE A LIST OF THE ASSIGNED SUBSPACE IDs FOR EVERY PROTEIN
-            grid[axis] = lib_axis_subspace.astype(int)
+            # SAVE A DICTIONARY WITH AS KEY THE AXIS AND AS VALUE A LIST OF THE ASSIGNED SUBSPACE IDs FOR EVERY PROTEIN
+            grid[axis] = dict_axis_subspace.astype(int)
             
-        for i in range(len(self.lib_data)): # LOOP OVER EVERY PROTEIN
-            # CONVERT THE GRID LIBRARY TO A LIBRARY WITH THE KEYS SET TO THE PROTEIN ID AND THE VALUE SET TO A LIST CONTAINING ALL THE SUBSPACE IDs FOR EVERY AXIS ==> CELL ID
-            index = list(self.lib_data.keys())[i]
-            self.lib_grid[index] = np.zeros((len(self.lib_interval),),dtype=int)
+        for i in range(len(self.dict_data)): # LOOP OVER EVERY PROTEIN
+            # CONVERT THE GRID DICTIONARY TO A DICTIONARY WITH THE KEYS SET TO THE PROTEIN ID AND THE VALUE SET TO A LIST CONTAINING ALL THE SUBSPACE IDs FOR EVERY AXIS ==> CELL ID
+            index = list(self.dict_data.keys())[i]
+            self.dict_grid[index] = np.zeros((len(self.dict_interval),),dtype=int)
             
             for axis in grid:
-                self.lib_grid[index][axis] = grid[axis][i]        
+                self.dict_grid[index][axis] = grid[axis][i]        
                 
     
     def assign_neigbours(self, index0, cluster):
@@ -469,7 +465,7 @@ class GBCA:
         for index in self.indices_not_clustered: # LOOP OVER THE NOT YET ASSIGNED PROTEINS
             # CHECK FOR EVERY, NOT YET ASSIGNED, PROTEIN IF THEY ARE IN RANGE TO BE CALLED A NEIGBOUR
             # --> IF TRUE: GROUP IT WITH THE ALREADY EXISTING GROUP OR GROUP IT WITH THE ORIGINAL PROTEIN
-            if all([-self.scope <= axis_distance <= self.scope for axis_distance in np.subtract(self.lib_grid[index], self.lib_grid[index0])]):
+            if all([-self.scope <= axis_distance <= self.scope for axis_distance in np.subtract(self.dict_grid[index], self.dict_grid[index0])]):
                 neighbours.append(index)
                 cluster.append(index)
                 self.indices_not_clustered = np.delete(self.indices_not_clustered, np.where(self.indices_not_clustered == index))          
@@ -492,19 +488,19 @@ class GBCA:
         Task of function: cluster all the neigbours of every protein not yet assigned to a cluster 
         '''
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
-        assert data != {} or self.lib_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
-        if data == {} and self.lib_data != {}:
-            data = self.lib_data
-        elif self.lib_data != data:
-            self.lib_data = data
+        assert data != {} or self.dict_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        if data == {} and self.dict_data != {}:
+            data = self.dict_data
+        elif self.dict_data != data:
+            self.dict_data = data
         
-        self.indices_not_clustered = np.array(list(self.lib_data.keys()))
+        self.indices_not_clustered = np.array(list(self.dict_data.keys()))
         self.interval_data()
         self.grid_data()
         
         cluster_nr = 0
         anticluster_nr = 0
-        lib_anticlustered = {}
+        dict_anticlustered = {}
         
         for index in self.indices_not_clustered: # LOOP OVER EVERY PROTEIN THAT IS NOT YET ASSIGNED TO ANY CLUSTER OR ANTICLUSTER
             if index in self.indices_not_clustered: 
@@ -512,19 +508,19 @@ class GBCA:
                 self.assign_neigbours(index,cluster)
                 
                 # CHECK IF THE CLUSTER IS BIGGER THEN THE SET THRESHOLD
-                # --> IF TRUE: ADD THE CLUSTER TO THE LIBRARY CONTAINING THE CLUSTERS
-                # --> IF FALSE: ADD THE CLUSTER TO THE LIBRARY CONTAINING THE NON-CLUSTERS IN THE LIBRARY CONTAINING THE CLUSTERS
+                # --> IF TRUE: ADD THE CLUSTER TO THE DICTIONARY CONTAINING THE CLUSTERS
+                # --> IF FALSE: ADD THE CLUSTER TO THE DICTIONARY CONTAINING THE NON-CLUSTERS IN THE DICTIONARY CONTAINING THE CLUSTERS
                 if len(cluster) > self.thres:              
-                    self.lib_clustered[cluster_nr] = cluster
+                    self.dict_clustered[cluster_nr] = cluster
                     cluster_nr += 1
                 else:
-                    lib_anticlustered[anticluster_nr] = cluster
+                    dict_anticlustered[anticluster_nr] = cluster
                     anticluster_nr += 1
             
-        # APPEND THE CLUSTER LIBRARY WITH THE LIBRARY CONTAINING THE NON-CLUSTERS             
-        self.lib_clustered[-1] = lib_anticlustered
+        # APPEND THE CLUSTER DICTIONARY WITH THE DICTIONARY CONTAINING THE NON-CLUSTERS             
+        self.dict_clustered[-1] = dict_anticlustered
         
-        return self.lib_clustered
+        return self.dict_clustered
     
     
     
@@ -535,26 +531,26 @@ class GBCA:
         '''
         
         summation = 0
-        lib_centroid = {}
+        dict_centroid = {}
         
         # CALCULATE THE CENTROIDS OF EVERY CLUSTER
-        for k in self.lib_clustered: # LOOP OVER THE CLUSTERS
+        for k in self.dict_clustered: # LOOP OVER THE CLUSTERS
             if k >= 0: # ONLY CALCULATE THE CENTROIDS FOR THE CLUSTERS NOT FOR THE NOT ASSIGNED DATAPOINTS
                 coordinate = []
-                for axis in self.lib_axis: # LOOP OVER THE AXES
+                for axis in self.dict_axis: # LOOP OVER THE AXES
                     mean_x = 0
                     
-                    for protein in [value for index, value in self.lib_data.items() if index in self.lib_clustered[k]]: # CALCULATE THE MEAN VALUE OF THE AXIS
+                    for protein in [value for index, value in self.dict_data.items() if index in self.dict_clustered[k]]: # CALCULATE THE MEAN VALUE OF THE AXIS
                         mean_x += protein[axis]
                     
-                    coordinate.append(mean_x / len(self.lib_clustered[k]))
-                    lib_centroid[k] = coordinate
+                    coordinate.append(mean_x / len(self.dict_clustered[k]))
+                    dict_centroid[k] = coordinate
         
-        for k in lib_centroid: # CALCULATE FOR EVERY CLUSTER THE E_SCORE
-            summation += np.sum([np.square(abs(np.subtract(lib_centroid[k], self.lib_data[dis]))) for dis in self.lib_clustered[k]])
+        for k in dict_centroid: # CALCULATE FOR EVERY CLUSTER THE E_SCORE
+            summation += np.sum([np.square(abs(np.subtract(dict_centroid[k], self.dict_data[dis]))) for dis in self.dict_clustered[k]])
             
         # CALCULATE THE MEAN E_SCORE FOR THE ENTIRE GRID CLUSTERING FIT
-        self.E_score = summation / len(lib_centroid)
+        self.E_score = summation / len(dict_centroid)
         
         return self.E_score
     
@@ -572,26 +568,26 @@ class GBCA:
         '''
         list_scores = []
         
-        for index in self.lib_data:
+        for index in self.dict_data:
             # GET THE CLUSTER #NR WHICH THE PROTEIN IS ASSIGNED TO
-            cluster_nr = [cluster for cluster, indices in self.lib_clustered.items() if (index in indices) and (cluster != -1)] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
+            cluster_nr = [cluster for cluster, indices in self.dict_clustered.items() if (index in indices) and (cluster != -1)] # GET CLUSTER #NR THE PROTEIN IS ASSIGNED TO
             
             #CHECK IF THE PROTEIN IS ASSIGNED TO A CLUSTER
             if cluster_nr != []:
                 cluster_nr = cluster_nr[0]
             
-                if len(self.lib_clustered[cluster_nr]) > 1:
+                if len(self.dict_clustered[cluster_nr]) > 1:
                     # CALCULATE THE MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS IN ITS CLUSTER (INTERNAL):
-                    dissimilarity_internal = np.sum([np.linalg.norm(self.lib_data[index] - self.lib_data[index_in]) for index_in in self.lib_data]) / (len(self.lib_data)-1)
+                    dissimilarity_internal = np.sum([np.linalg.norm(self.dict_data[index] - self.dict_data[index_in]) for index_in in self.dict_data]) / (len(self.dict_data)-1)
                     
                     # CALCULATE THE MINIMAL MEAN DISTANCE OF THE PROTEIN TO ALL THE OTHER PROTEINS FROM THE OTHER CLUSTERS (EXTERNAL):
                     # --> MEAN DISTANCE IS GROUPED PER CLUSTER. FROM THIS LIST THE MINIMAL DISTANCE IS CALCULATED
-                    dissimilarity_external = np.min([np.mean([np.linalg.norm(self.lib_data[index] - self.lib_data[index_ex]) for index_ex in self.lib_data if index_ex in self.lib_clustered[cluster]]) for cluster in self.lib_clustered if (cluster != cluster_nr) & (cluster != -1)])
+                    dissimilarity_external = np.min([np.mean([np.linalg.norm(self.dict_data[index] - self.dict_data[index_ex]) for index_ex in self.dict_data if index_ex in self.dict_clustered[cluster]]) for cluster in self.dict_clustered if (cluster != cluster_nr) & (cluster != -1)])
                     
                     # CALCULATING THE SILHOUETTE SCORE FOR PROTEIN BY APPLYING THE FORMULA:
                     sil_score_i = (dissimilarity_external - dissimilarity_internal) / max(dissimilarity_external,dissimilarity_internal)
                     
-                if len(self.lib_clustered[cluster_nr]) == 1:
+                if len(self.dict_clustered[cluster_nr]) == 1:
                     sil_score_i = 0
                 
                 list_scores.append(sil_score_i)
@@ -611,10 +607,10 @@ class GBCA:
                             --> Value = list of floats
                         subspace_min, subspace_max: range in which parameter subspaces can be varied (lowest = subspace_min, highest = subspace_max)
                         measure: measure by which to evaluate how well the clustering fits (either 'E' for E-score or 'Sil' for silhouette score)
-        Postconditions: lib_clustered: a dictionary:
+        Postconditions: dict_clustered: a dictionary:
                                     --> Key = Cluster #nr
                                     --> Value = list of protein IDs that are assigned to that cluster when the E_score (the goodness of the fit) is in its maximum
-                        lib_Silscores/lib_Escores: a dictionary:
+                        dict_silscores/dict_Escores: a dictionary:
                                                 --> Key = subspace
                                                 --> Value = Sil_score/E_score
         Task of function: calculating which subspace gives the best results --> returning the clustered proteins for which the Sil_score is at its highest when comparing different subspaces
@@ -623,11 +619,11 @@ class GBCA:
         assert subspace_min >= 1, "subspace_min must be 1 or higher. --> optimize(subspace_min)"
         assert (measure == 'Sil' or measure == 'E'), "Measure must either be 'Sil' or 'E'. --> optimize(measure)"
         assert type(data) == dict, "Input of 'data' is of a type other than dictionary, must be dictionary. --> clustering(data)"
-        assert data != {} or self.lib_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
-        if data == {} and self.lib_data != {}:
-            data = self.lib_data
-        elif self.lib_data != data:
-            self.lib_data = data
+        assert data != {} or self.dict_data != {}, "No input given or empty dictionary given as input for 'data'. --> optimize(data) or clustering(data) or __init__(data) or interval_data(data)"
+        if data == {} and self.dict_data != {}:
+            data = self.dict_data
+        elif self.dict_data != data:
+            self.dict_data = data
         print('\nFinding the optimal number of subspaces\nPROGRESS:')
         for subspace in range(subspace_min, subspace_max+1): # LOOP OVER THE RANGE OF SUBSPACES THAT IS GIVEN
             self.subspaces = subspace
@@ -636,24 +632,24 @@ class GBCA:
             if measure == 'Sil':
                 try: # CALCULATE THE SILHOUETTE SCORE AND SAVE IT
                     self.silhouette_score()
-                    self.lib_silscores[subspace] = self.Sil_score
+                    self.dict_silscores[subspace] = self.Sil_score
                 except: # WHEN GIVEN NaN (WHEN NOT ALL CLUSTERS ARE FILLED OR ONLY 1 CLUSTER EXISTS) RETURN A VALUE THAT IS OUT OF THE SILHOUETTE RANGE
-                    self.lib_silscores[subspace] = -2
+                    self.dict_silscores[subspace] = -2
   
             else: # If not 'Sil', the measure is 'E' (see assert commands above)
                 self.Escore()
-                self.lib_Escores[subspace] = self.E_score
+                self.dict_Escores[subspace] = self.E_score
                     
             print(f'{(((subspace-subspace_min)/(subspace_max-subspace_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
 
         if measure == 'Sil':
-            self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
+            self.subspaces =  list(self.dict_silscores.keys())[np.argmax(list(self.dict_silscores.values()))]
         else:
-            self.subspaces = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
+            self.subspaces = list(self.dict_Escores.keys())[np.argmin(list(self.dict_Escores.values()))]
    
         self.clustering()
 
-        return self.lib_clustered
+        return self.dict_clustered
 
 
 """
@@ -661,7 +657,7 @@ class GBCA:
     
 """
 def return_txt_file(data, name, format_data):
-    lib_unfolded = dict()
+    dict_unfolded = dict()
     score = False
     anticlusters = []
     for cluster in data:
@@ -669,11 +665,11 @@ def return_txt_file(data, name, format_data):
             for i in data[cluster]:
                 anticlusters.append(data[cluster][i])
         if type(data[cluster]) == int: 
-            lib_unfolded[data[cluster]] = cluster
+            dict_unfolded[data[cluster]] = cluster
         else:
             try:
                 for ID in data[cluster]:
-                    lib_unfolded[ID] = cluster
+                    dict_unfolded[ID] = cluster
             except:
                 score = True
                 break
@@ -683,7 +679,7 @@ def return_txt_file(data, name, format_data):
     if score == False:
         for INDEX in format_data:
             try:
-                line = str(INDEX) + " " + str(lib_unfolded[INDEX]) + "\n"
+                line = str(INDEX) + " " + str(dict_unfolded[INDEX]) + "\n"
                 file.write(line)
             except Exception:
                 pass
@@ -700,7 +696,7 @@ def return_txt_file(data, name, format_data):
 
 def main(filename):
      # APPLY KMCA TO THE GIVEN DATASET:
-     lib_data = file_to_lib(filename)
+     dict_data = file_to_dict(filename)
      algorithm = str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA": '))
      if algorithm == 'KMCA':
          k_min = int(input('Minimum number of clusters (k_min): '))
@@ -708,10 +704,10 @@ def main(filename):
          measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
          seeds = list(range(int(input('How many different seeds should be chosen? (used for random initial cluster assignment)\nNumber of different seeds: '))))
          
-         kmca = KMCA(data=lib_data)
+         kmca = KMCA(data=dict_data)
          kmca_results = kmca.optimize(k_min=k_min, k_max=k_max, measure=measure, seeds=seeds)
          outfile_name = 'kmca_results.txt'
-         return_txt_file(kmca_results, outfile_name, lib_data)
+         return_txt_file(kmca_results, outfile_name, dict_data)
          print(f'\nClustering finished and optimized; The optimal number of clusters is {kmca.k}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {kmca.E_score}\nThe Silhouette score is {kmca.Sil_score}\n')
          
      elif algorithm == 'GBCA':
@@ -721,11 +717,13 @@ def main(filename):
          subspace_max = int(input('Maximum number of subspaces (subspace_max): '))
          measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
 
-         gbca = GBCA(data=lib_data, scope=scope, thres=thres)
+         gbca = GBCA(data=dict_data, scope=scope, thres=thres)
          gbca_results = gbca.optimize(subspace_min=subspace_min, subspace_max=subspace_max, measure=measure)
          outfile_name = 'gbca_results.txt'
-         return_txt_file(gbca_results, outfile_name, lib_data)
+         return_txt_file(gbca_results, outfile_name, dict_data)
          print(f'\nClustering finished and optimized; The optimal number of subspaces is {gbca.subspaces}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {gbca.E_score}\nThe Silhouette score is {gbca.Sil_score}\n')
      else:
          raise ValueError('Value Error: no valid algorithm name provided. Please type either "KMCA" or "GBCA".') 
      return outfile_name
+ 
+main('Voorbeeld_clusterdata.txt')
