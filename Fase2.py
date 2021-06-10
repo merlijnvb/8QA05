@@ -342,17 +342,17 @@ class KMCA:
                 print(f'{(((k-k_min)/(k_max-k_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
                 
         if measure == 'Sil':
-            self.k = list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
-            self.Sil_score = self.lib_silscores[self.k]
+            self.k = list(self.dict_silscores.keys())[np.argmax(list(self.dict_silscores.values()))]
+            self.Sil_score = self.dict_silscores[self.k]
             self.clustering()
             self.Escore()
         else:
-            self.k = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
-            self.E_score = self.lib_Escores[self.k]
+            self.k = list(self.dict_Escores.keys())[np.argmin(list(self.dict_Escores.values()))]
+            self.E_score = self.dict_Escores[self.k]
             self.clustering()
             self.silhouette_score()
         
-        return self.lib_clustered
+        return self.dict_clustered
 
 
 
@@ -647,17 +647,17 @@ class GBCA:
             print(f'{(((subspace-subspace_min)/(subspace_max-subspace_min))*100):.2f}%') # PRINT AT EVERY ITERATION HOW FAR THE EVALUATION PROCES IS
 
         if measure == 'Sil':
-            self.subspaces =  list(self.lib_silscores.keys())[np.argmax(list(self.lib_silscores.values()))]
-            self.Sil_score = self.lib_silscores[self.subspaces]
+            self.subspaces =  list(self.dict_silscores.keys())[np.argmax(list(self.dict_silscores.values()))]
+            self.Sil_score = self.dict_silscores[self.subspaces]
             self.clustering()
             self.Escore()
         else:
-            self.subspaces = list(self.lib_Escores.keys())[np.argmin(list(self.lib_Escores.values()))]
-            self.E_score = self.lib_Escores[self.subspaces]
+            self.subspaces = list(self.dict_Escores.keys())[np.argmin(list(self.dict_Escores.values()))]
+            self.E_score = self.dict_Escores[self.subspaces]
             self.clustering()
             self.silhouette_score()
 
-        return self.lib_clustered
+        return self.dict_clustered
 
 
 """
