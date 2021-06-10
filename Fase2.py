@@ -733,5 +733,3 @@ def main(filename):
      else:
          raise ValueError('Value Error: no valid algorithm name provided. Please type either "KMCA" or "GBCA".') 
      return outfile_name
- 
-main('Voorbeeld_clusterdata.txt')
