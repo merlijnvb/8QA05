@@ -705,12 +705,12 @@ def return_txt_file(data, name, format_data):
 def main(filename):
      # APPLY KMCA TO THE GIVEN DATASET:
      dict_data = file_to_dict(filename)
-     algorithm = str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA": '))
+     algorithm = str(input('Which clustering algorithm do you want to use?\n"KMCA" or "GBCA":\n '))
      if algorithm == 'KMCA':
-         k_min = int(input('Minimum number of clusters (k_min): '))
-         k_max = int(input('Maximum number of clusters (k_max): '))
-         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
-         seeds = list(range(int(input('How many different seeds should be chosen? (used for random initial cluster assignment)\nNumber of different seeds: '))))
+         k_min = int(input('Minimum number of clusters (k_min):\n '))
+         k_max = int(input('Maximum number of clusters (k_max):\n '))
+         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil":\n '))
+         seeds = list(range(int(input('How many different seeds should be chosen? (used for random initial cluster assignment)\nNumber of different seeds:\n '))))
          
          kmca = KMCA(data=dict_data)
          kmca_results = kmca.optimize(k_min=k_min, k_max=k_max, measure=measure, seeds=seeds)
@@ -719,11 +719,11 @@ def main(filename):
          print(f'\nClustering finished and optimized; The optimal number of clusters is {kmca.k}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {kmca.E_score}\nThe Silhouette score is {kmca.Sil_score}\n')
          
      elif algorithm == 'GBCA':
-         scope = int(input('What is the range (in subspaces) in which a cell must be to another cell to be considered its neighbour? '))
-         thres = int(input('What is the minimum amount of datapoints that must be in a cluster to consider it a valid cluster? '))
-         subspace_min = int(input('Minimum number of subspaces (subspace_min): '))
-         subspace_max = int(input('Maximum number of subspaces (subspace_max): '))
-         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil": '))
+         scope = int(input('What is the range (in subspaces) in which a cell must be to another cell to be considered its neighbour?\n '))
+         thres = int(input('What is the minimum amount of datapoints that must be in a cluster to consider it a valid cluster?\n '))
+         subspace_min = int(input('Minimum number of subspaces (subspace_min):\n '))
+         subspace_max = int(input('Maximum number of subspaces (subspace_max):\n '))
+         measure = str(input('By which score should the quality of clustering be assessed?\nType "E" or "Sil":\n '))
 
          gbca = GBCA(data=dict_data, scope=scope, thres=thres)
          gbca_results = gbca.optimize(subspace_min=subspace_min, subspace_max=subspace_max, measure=measure)
