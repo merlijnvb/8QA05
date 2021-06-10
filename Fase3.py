@@ -459,7 +459,8 @@ def get_location(code='ensemble'):
     print(df_locations.set_index(['cluster','location']))
     return terms_not_found
 
-def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, fase1_data):
+def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, in_nr_clusters, min_length_substring, fase1_data,day_numbers):
+    print("DIT ZIJN DE DAGNUMMERS:",day_numbers)
     lib_cluster_results = data_inlezen(f_clus_res)
     lib_beschrijvingen = data_inlezen(f_desc)
     lib_expression = data_inlezen(f_exprs)
