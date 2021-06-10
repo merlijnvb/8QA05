@@ -27,4 +27,4 @@ f_desc = 'GenDescription2.txt'
 f_exprs = outf_name_fase1[0]
 f_fam = 'CloneIdFamily.txt'
 
-F3.main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, min_length_substring, outf_name_fase1[1])
+F3.main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, min_length_substring, outf_name_fase1[1],F1.Day_numbers)
