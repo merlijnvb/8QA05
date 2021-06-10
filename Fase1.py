@@ -5,7 +5,7 @@ members: Iris Almekinders and Niels van Noort
 """
 
 
-# importing needed ibraries
+# importing needed libraries
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
