@@ -5,11 +5,12 @@ members: Iris Almekinders and Niels van Noort
 """
 
 
-# libraries
+# importing needed ibraries
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
-
+from os import listdir
+from pathlib import Path
 
 # global variables
 Columns = ['P2SigNorm', 'Log_P1Sig', 'Log_P2Sig', 'Log_P2SigNorm', 'Class']
@@ -17,16 +18,12 @@ Day_numbers = []
 
 # definitions
 def find_files(file_key_word):
-    """Preconditions:  file_key_word is een string die voor kan komen als een
-                        deel van een bestandsnaam. Er is minimaal één bestand
-                        aanwezig in dezelfde map als dit .py bestand wiens 
-                        naam begin met file_key_word, gevolgd door een nummer,
-                        waarna direct eindigend met .txt
-    Postconditions:    Returns list of textfilenames based on Day_numbers"""
-    # importing useful ibraries
-    from os import listdir
-    from pathlib import Path
-    
+    """Preconditions:   file_key_word is a string that occurs as a part of a 
+                        file name. There is at least one file present in the 
+                        same folder as this .py file whose name starts with
+                        file_key_word, followed by a number, ending with .txt.
+    Postconditions:     Returns list of textfile names based on Day_numbers."""
+
     # creating a list of filenames
     arr = listdir(Path(__file__).parent.absolute())
     filenames = [filename for filename in arr if file_key_word in filename]
@@ -46,18 +43,21 @@ def find_files(file_key_word):
 
 
 def readfile(filename):
-    """Preconditions:  Filename is de naam van een .txt bestand dat te vinden
-                        is in dezelfde map als deze functie.
-    Postconditions:    Retourneert een dictionary met daarin per ID een lijst 
-                        van alle bijbehorende waarden."""
+    """Preconditions:   Filename is the name of a .txt file that can be found
+                        in the same folder as this function.
+    Postconditions:     Returns a dictionary containing a list of all 
+                        expression values for each ID."""
+                        
     # read the text file
     infile = open(filename)
     lines = infile.readlines()
     infile.close()
     ID_dict = {}
     if len(Columns) == 5: 
-        for col_head in reversed(lines.pop(0).split()[1:]): Columns.insert(0,col_head) # adds the headings to global var Columns, only if that hasn't been done yet
-    else: lines.pop(0)
+        for col_head in reversed(lines.pop(0).split()[1:]):
+            Columns.insert(0,col_head) # adds the headings to global var Columns, only if that hasn't been done yet
+    else: 
+        lines.pop(0)
     
     # make a dictionary-entry per line
     for line in lines:
@@ -75,10 +75,11 @@ def readfile(filename):
 
 
 def normSig2_add(Days):
-    """Preconditions:  Days is een lijst van dictionaries met per ID de 
-                        bijbehorende waarden.
-    Postconditions:    Normaliseert P2Sig (P2Sig * S1/S2) en voegt deze toe aan
-                        elke dictionary."""
+    """Preconditions:   Days is a list of dictionaries containing the expression
+                        values for each ID.
+    Postconditions:     Normalizes P2Sig (P2Sig * S1/S2) and adds this to every
+                        dictionary."""
+                        
     for Day in Days:
         S1 = summation(Day,"P1Sig") # counts all P1Sig values
         S2 = summation(Day,"P2Sig") # counts all P2Sig values
@@ -87,10 +88,11 @@ def normSig2_add(Days):
 
 
 def summation(Day,column_head):
-    """Preconditions:  Day is een dictionary met per ID de bijbehorende 
-                        waarden en column head is de index van de kolom die
-                        moet worden opgesomd.
-    Postconditions:    Retourneert de som van alle waarden uit de kolom."""
+    """Preconditions:   Day is a dictionary containing the expression values for
+                        each ID and the column head is the index of the column
+                        that has to be recited.
+    Postconditions:     Returns the sum of all words of the column."""
+    
     total = 0 # counter
     
     for ID in Day:
@@ -100,10 +102,11 @@ def summation(Day,column_head):
 
 
 def Log_add(Days):
-    """Preconditions:  Days is een lijst van dictionaries met per ID de 
-                        bijbehorende waarden.
-    Postconditions:    Zet P1Sig, P2Sig en P2SigNorm in een logaritme en voegt 
-                        deze toe aan elke dictionary in Days."""
+    """Preconditions:   Days is a list of dictionaries containing the expression
+                        values for each ID.
+    Postconditions:     Puts P1Sig, P2Sig and P2SigNorm in a logarithm and adds
+                        them to each dictionary in Days."""
+                        
     for Day in Days:
         for ID in Day:
             Day[ID].append(math.log10(Day[ID][Columns.index("P1Sig")]))
@@ -112,10 +115,11 @@ def Log_add(Days):
 
               
 def Classes(Days,frequences=False):
-    """Preconditions:  Days is een lijst van libraries, frequences is een 
-                        boolean die het printen aan kan zetten, per default uit.
-    Postconditions:    Roept de funtie make_class aan per dag en print daarmee
-                        de frequenties per dag en klasse als frequences==True"""
+    """Preconditions:   Days is a list of libraries, frequences is a boolean that
+                        can activate the printing, this is turned off by default.
+    Postconditions:     Invokes the function make_class for every day and prints the
+                        frequences for each day and class as frequences==True."""
+        
     classes = "ABCD"
     
     for i in range(len(Days)):
@@ -127,16 +131,15 @@ def Classes(Days,frequences=False):
 
 
 def make_class(Day,stb_threshold=25):
-    """Preconditions:  Day is een dictionary met per ID de bijbehorende 
-                        waarden. stb_threshold is de drempelwaarde voor de 
-                        filtering van de classes.
-    Postconditions:    Voegt aan elke waarde van Day een klasse (A, B, C of D)
-                        toe op basis van de waarden van P1STB en P2STB. Voor
-                        deze klassen geldt respectievelijk in vergelijking
-                        met de drempelwaarde: Geen waarden lager, slechts P2 
-                        lager, slechts P1 lager, beide lager.
-                        Retourneert een lijst met de frequenties van alle
-                        klassen"""
+    """Preconditions:   Day is a dictionary containing the expression values for
+                        each Id. stb_threshold is the treshold value for the
+                        filtering of the classes.
+    Postconditions:     Adds a class (A, B, C or D) to every value of Day based
+                        on the values of P1STB and P2STB. For these values applies,
+                        respectively in comparison with the treshold value,
+                        No values lower, only P2 lower, only P1 lower, both lower.
+                        Returns a list with the frequences of all classes."""
+                        
     counts = [0,0,0,0] # list of counters
     
     for ID in Day:
@@ -159,9 +162,9 @@ def make_class(Day,stb_threshold=25):
 
   
 def add_expression(Days):
-    """Preconditions:  Days is een lijst van libraries
-    Postconditions:    voegt de relatieve expressiewaarden toe aan elke Day uit
-                        Days"""
+    """Preconditions:   Days is a list of libraries.
+    Postconditions:     Adds the relative expression values to each day in Days."""
+    
     Columns.append("RelativeExpression")
     for Day in Days:
         for ID in Day:
@@ -173,16 +176,15 @@ def add_expression(Days):
 
 
 def Daysdict(Days,r_filter=0.5):
-    """Preconditions:  Days is een lijst van libraries, r_filter is de  
-                        filtervoorwaarde voor de expressiewaarde r
-    Postconditions:    Voegt alle r-waarden van Days samen in één dictionary 
-                        en retourneert deze als eerste waarde. Houdt verder
-                        bij van elk gen hoevaak deze elke belangrijke 
-                        filtervoorwaarde overschrijdt, zodat hier later op 
-                        gefilterd kan worden. Stopt deze waarden in een lijst
-                        met respectievelijk de counters van: in class B of C,
-                        in class D, spotgrootte buiten de range [40,160] en 
-                        |r| kleiner dan r_filter."""
+    """Preconditions:   Days is a list of libraries, r_filter is the filter 
+                        condition for expression value r.
+    Postconditions:     Adds all r values of Days together in one dictionary
+                        and returns this as the first value. It keeps track of
+                        exceedances, to filter it later on. It puts these values
+                        in a list with respectively the counters of:
+                        in class B or C, in class D, spot size out of the range
+                        [40, 160] and |r| smaller than r_filter."""
+                        
     # Dictionaries that will be filled
     New_Days = {}
     Filterinfo = {}
@@ -202,21 +204,21 @@ def Daysdict(Days,r_filter=0.5):
 
     
 def filtering(rDict, Filterinfo):
-    """Preconditions:  rDict is een library waarvan elke value een lijst is met
-                        de r-waarde per dag. Filterinfo is een dictionary even 
-                        groot als rDict, met per ID (key) een lijst (value)
-                        met de hoeveelheid die elk gen de volgende
-                        filtervoorwaarden respectievelijk overschrijdt: in 
-                        class B of C, in class D, spotgrootte buiten de range 
-                        [40,160] en |r| kleiner dan r_filter.
-    Postconditions:    Retourneert een gefilterde versie van rDict op basis van
-                        de filtervoorwaarden:
-                            - D komt niet voor
-                            - de r-waarde is minimaal éénmaal buiten de 
-                              filtergrens
-                            - de hoeveelheid keren dat C of B voorkomt, samen 
-                              met hoe vaak de spotgrootte fout is mag niet meer 
-                              zijn dan 2"""
+    """Preconditions:   rDict is a library containing a list for each value, 
+                        the list containing the r-value for each day. Filterinfo 
+                        is a dictionary as big as rDict, containing a list 
+                        (value) for each ID (key) with the amount that is 
+                        exceeded for each gene: in class B or C, in class D, 
+                        spot size outside the range [40, 160] and |r| smaller 
+                        than r_filter.
+    Postconditions:     Returns a filtered version of rDict based on the filter
+                        conditions:
+                            - D does not occur
+                            - the r value is at least once outside the filter
+                            limit
+                            - the amount of times that C or B occur, together with
+                            how often the spot size is wrong; this can't be more 
+                            than 2"""
     Filtered_rDict = {}
     
     for ID in rDict:
@@ -227,12 +229,12 @@ def filtering(rDict, Filterinfo):
 
 
 def dict_to_txt(rDict,filename,parse):
-    """Preconditions:  rDict is een dictionary van lijsten, filename is de naam
-                        van het te schrijven bestand en parse is de ruimte die 
-                        tussen elke waarde van rDict moet komen.
-    Postconditions:    Schrijft een dictionary weg naar een tekstbestand met
-                        één key-value paar per regel en een witregel aan het
-                        einde"""
+    """Preconditions:   rDict is a dictionary of lists, filename is the name of
+                        the file that will be written, parse is the space 
+                        between each value of rDict.
+    Postconditions:     Makes a file from a dictionary with one key value pair 
+                        for each line and a blank line at the end."""
+                        
     outfile = open(filename,'w') # start writing in a file called filename
     
     for ID in rDict:
@@ -244,9 +246,9 @@ def dict_to_txt(rDict,filename,parse):
 
 
 def plot_phase1(Days,rDict,r_filter=0.5):
-    """Preconditions:  Days is een lijst van libraries
-    Postconditions:    Roept alle mogelijkheden voor  
-                        plot_Days aan."""   
+    """Preconditions:  Days is a list of libraries.
+    Postconditions:    Calls on all the possibilities for plot_Days.""" 
+                        
     for log in [False,True]:
         for norm in [False,True]:
             plot_Days(Days,log,norm)
@@ -256,12 +258,12 @@ def plot_phase1(Days,rDict,r_filter=0.5):
     
 
 def plot_Days(Days,log=False,Norm=False):
-    """Preconditions:  Days is een lijst van libraries, log en
-                        norm zijn booleans die aangeven of de 
-                        functie logaritmisch, dan wel genormaliseerd
-                        moet worden geplot.
-    Postconditions:    Zorgt ervoor dat de data van elke dag in één
-                        figuur zou """    
+    """Preconditions:   Days is a list from libraries, log and norm are booleans 
+                        which indicate if the function must be plotted 
+                        normalized or logarithmic.
+    Postconditions:     Ensures that the data of every day would be in one 
+                        figure.""" 
+                        
     # make extra variables 
     add_on = '' # for the title 
     norm_fac = 0 # for normalisation column index
@@ -306,10 +308,11 @@ def plot_Days(Days,log=False,Norm=False):
 
      
 def plot_hist(rDict):
-    """Preconditions:  rDict is een dictionary van lijsten,
-    Postconditions:    Plot een histogram van de expressiewaarden voor elke 
-                        dag, zodat er te zien is hoe vaak een expressiewaarde 
-                        voorkomt."""
+    """Preconditions:   rDict is a dictionary of lists
+    Postconditions:     plots a histogram from the expressionvalues for
+                        each day, to visualize how often a particular
+                        expression value occurs"""
+                        
     fig, ax = plt.subplots(2,4,figsize=(20,10),sharex=True,sharey=True)
     fig.suptitle("Histograms of expressions per day",size=24,weight='bold')
     df = pd.DataFrame.from_dict(rDict).transpose() # making a dataframe of rDict for more efficiency in plotting
@@ -323,14 +326,15 @@ def plot_hist(rDict):
 
 
 def line_plots(rDict,r_filter,movement=256):
-    """Preconditions:  rDict is een dictionary van lijsten, r_filter is de 
-                        filtergrens van |r| en movement is het aantal waarden
-                        uit rDict die moeten worden overgeslagen voor het 
-                        plotten, opdat andere plots gezien kunnen worden.
-    Postconditions:    Plot ncols**2 lijndiagrammen van genen, met op elke x-as
-                        de progressie van Days en op elke y-as de expressie-
-                        waarde R. Plot tevens een lijn op y=r en y=-r om aan te 
-                        geven waar de filtergrens zal liggen"""
+    """Preconditions:   rDict is a dictionary of lists, r_filter is the filter
+                        limit of |r|, movement is the amount of values
+                        from rDict that need to be saved, so the other
+                        plots can be seen
+    Postconditions:     plots ncols**2 line charts of the genes. The x-axis
+                        shows the progression of the days and the y-axis
+                        the exression value R. It also plots the line y=r
+                        and y=-r to indicate the boundaries"""
+                        
     nr_of_plots = int(input("How many lineplots would you like? \n"))
     if nr_of_plots < 1: return # don't start plotting if the number of plots is 0 or negative
     
