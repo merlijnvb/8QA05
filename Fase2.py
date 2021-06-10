@@ -656,9 +656,9 @@ class GBCA:
             self.E_score = self.dict_Escores[self.subspaces]
             self.clustering()
             self.silhouette_score()
-
+            
         return self.dict_clustered
-
+       
 
 """
     PRINT TEXT FILES FORMATTED/SORTED LIKE THE INPUT FILE
@@ -730,6 +730,9 @@ def main(filename):
          outfile_name = 'gbca_results.txt'
          return_txt_file(gbca_results, outfile_name, dict_data)
          print(f'\nClustering finished and optimized; The optimal number of subspaces is {gbca.subspaces}\nThe results of the best clustering are written to {outfile_name}\nThe E-score is {gbca.E_score}\nThe Silhouette score is {gbca.Sil_score}\n')
+
      else:
          raise ValueError('Value Error: no valid algorithm name provided. Please type either "KMCA" or "GBCA".') 
+
      return outfile_name
+
