@@ -495,7 +495,7 @@ def main(f_clus_res, f_desc, f_exprs, f_fam, min_frequency, min_length_substring
     question = input(f'How many clusters would you like to check for similar descriptions? \nChoose a number > 0 & <= {len(np.unique(list(dict_cluster_results.values())))} \nIf you don\'t want to check, type \"n\" \n')
     if question != "n":
         in_nr_clusters = int(question)
-        TelWoorden_res = TelWoorden(dict_cluster_results, dict_descriptions, dict_expression, deleted, min_frequency, in_nr_clusters, min_length_substring, rejected_only=False)
+        TelWoorden_res = TelWoorden(dict_cluster_results, dict_descriptions, f_exprs, deleted, min_frequency, in_nr_clusters, min_length_substring, rejected_only=False)
         if TelWoorden_res != 'error':
             print(TelWoorden_res)
         else:
