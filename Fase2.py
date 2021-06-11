@@ -6,8 +6,7 @@ members: Merlijn van Benthem, Dimo Devetzis en Sam Reijs
 
 
 """
-   IMPORTING NEEDED LIBRARY
-        
+   IMPORTING NEEDED LIBRARY 
 """
 import numpy as np
 
